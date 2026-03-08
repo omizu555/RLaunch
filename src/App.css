@@ -1,0 +1,127 @@
+/* ============================================================
+   MyLauncher - Global Styles
+   グローバルリセット・レイアウト・共通UIのみ。
+   コンポーネント固有スタイルは各 components/*.css へ。
+   ============================================================ */
+@import "./themes/variables.css";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  color: var(--text-primary);
+  background: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+/* ============================================================
+   App Layout
+   ============================================================ */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  /* P-50: ウィンドウ透過 */
+  background: var(--bg-primary);
+  opacity: var(--window-opacity, 1);
+}
+
+/* ============================================================
+   Status Bar
+   ============================================================ */
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 10px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  font-size: 10px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Toast Notification
+   ============================================================ */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--accent-color);
+  padding: 8px 20px;
+  border-radius: var(--border-radius);
+  font-size: 12px;
+  box-shadow: 0 6px 20px var(--shadow-color);
+  z-index: 2000;
+  animation: toast-in 0.2s ease-out;
+  pointer-events: none;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ============================================================
+   共通ボタンスタイル（子ウィンドウは window-base.css を使用）
+   ============================================================ */
+.dialog-btn {
+  padding: 6px 16px;
+  border-radius: var(--border-radius-sm);
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  font-family: inherit;
+}
+.dialog-btn.secondary {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.dialog-btn.secondary:hover {
+  background: var(--bg-button-hover);
+}
+.dialog-btn.primary {
+  background: var(--accent-color);
+  color: #1e1e2e;
+  border-color: var(--accent-color);
+  font-weight: 600;
+}
+.dialog-btn.primary:hover {
+  background: var(--accent-hover);
+}
+.dialog-btn.small {
+  font-size: 10px;
+  padding: 3px 8px;
+}

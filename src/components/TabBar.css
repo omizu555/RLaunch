@@ -1,0 +1,146 @@
+/* ============================================================
+   TabBar - タブバースタイル
+   ============================================================ */
+.tabbar {
+  display: flex;
+  align-items: center;
+  height: var(--tabbar-height);
+  background: var(--bg-secondary);
+  padding: 0 6px;
+  gap: 2px;
+  border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.tab {
+  padding: 4px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  white-space: nowrap;
+  position: relative;
+  transition: all 0.12s ease;
+}
+.tab:hover {
+  color: var(--text-primary);
+  background: rgba(137, 180, 250, 0.08);
+}
+.tab.active {
+  color: var(--accent-color);
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+  font-weight: 600;
+}
+.tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--bg-primary);
+}
+
+.tab-add {
+  padding: 4px 10px;
+  font-size: 16px;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  transition: all 0.12s;
+  background: none;
+}
+.tab-add:hover {
+  color: var(--accent-color);
+  background: rgba(137, 180, 250, 0.08);
+}
+
+/* タブ右クリックメニュー */
+.tab-context-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+.tab-context-menu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 140px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 6px 20px var(--shadow-color);
+  padding: 4px 0;
+}
+.tab-context-item {
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+.tab-context-item:hover {
+  background: var(--accent-color);
+  color: #1e1e2e;
+}
+.tab-context-item.danger:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+.tab-context-separator {
+  height: 1px;
+  background: var(--border-color);
+  margin: 3px 0;
+}
+
+/* P-03: タブD&D並び替え */
+.tab.tab-dragging {
+  opacity: 0.4;
+}
+.tab.tab-drag-over {
+  border-left: 2px solid var(--accent-color);
+}
+
+/* P-04: タブカラーマーカー */
+.tab-color-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+.tab-color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px;
+  margin-top: 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+.tab-color-option {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 0;
+}
+.tab-color-option:hover {
+  border-color: var(--accent-color);
+  transform: scale(1.15);
+}
+.tab-color-option.no-color {
+  background: var(--bg-secondary);
+}

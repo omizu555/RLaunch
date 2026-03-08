@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyLauncher - モック画面</title>
+<style>
+/* ============================================================
+   CSS Variables (Theme: Dark)
+   ============================================================ */
+:root {
+  --bg-primary: #1e1e2e;
+  --bg-secondary: #181825;
+  --bg-button: #313244;
+  --bg-button-hover: #45475a;
+  --bg-button-active: #585b70;
+  --bg-button-empty: rgba(69, 71, 90, 0.25);
+  --text-primary: #cdd6f4;
+  --text-secondary: #a6adc8;
+  --text-muted: #6c7086;
+  --border-color: #45475a;
+  --accent-color: #89b4fa;
+  --accent-hover: #74c7ec;
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --danger-color: #f38ba8;
+  --success-color: #a6e3a1;
+  --warning-color: #fab387;
+  --font-family: 'Segoe UI', 'Yu Gothic UI', 'Meiryo', sans-serif;
+  --font-size: 12px;
+  --border-radius: 8px;
+  --border-radius-sm: 4px;
+  --button-size: 72px;
+  --icon-size: 32px;
+  --grid-gap: 6px;
+  --titlebar-height: 36px;
+  --tabbar-height: 32px;
+}
+
+/* ============================================================
+   Reset & Base
+   ============================================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  background: #11111b;
+  color: var(--text-primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  user-select: none;
+}
+
+/* ============================================================
+   Launcher Window
+   ============================================================ */
+.launcher-window {
+  width: 620px;
+  background: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px var(--shadow-color), 0 0 0 1px rgba(255,255,255,0.06);
+  overflow: hidden;
+  position: relative;
+}
+
+/* ============================================================
+   Custom Title Bar
+   ============================================================ */
+.titlebar {
+  display: flex;
+  align-items: center;
+  height: var(--titlebar-height);
+  background: var(--bg-secondary);
+  padding: 0 8px;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: default;
+}
+
+.titlebar-menu-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.titlebar-menu-btn:hover { background: var(--bg-button-hover); color: var(--text-primary); }
+
+.titlebar-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.3px;
+}
+
+.titlebar-controls {
+  display: flex;
+  gap: 2px;
+}
+
+.titlebar-btn {
+  width: 32px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+}
+.titlebar-btn:hover { background: var(--bg-button-hover); color: var(--text-primary); }
+.titlebar-btn.close:hover { background: var(--danger-color); color: #1e1e2e; }
+
+/* ============================================================
+   Search Bar (toggle)
+   ============================================================ */
+.search-bar {
+  display: none;
+  padding: 6px 10px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+.search-bar.visible { display: block; }
+
+.search-input {
+  width: 100%;
+  background: var(--bg-button);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  padding: 5px 10px;
+  font-size: 12px;
+  outline: none;
+}
+.search-input:focus { border-color: var(--accent-color); }
+.search-input::placeholder { color: var(--text-muted); }
+
+/* ============================================================
+   Tab Bar
+   ============================================================ */
+.tabbar {
+  display: flex;
+  align-items: center;
+  height: var(--tabbar-height);
+  background: var(--bg-secondary);
+  padding: 0 6px;
+  gap: 2px;
+  border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;
+}
+
+.tab {
+  padding: 4px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  white-space: nowrap;
+  position: relative;
+  transition: all 0.15s ease;
+}
+.tab:hover { color: var(--text-primary); background: rgba(137, 180, 250, 0.08); }
+.tab.active {
+  color: var(--accent-color);
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+  font-weight: 600;
+}
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--bg-primary);
+}
+
+.tab-add {
+  padding: 4px 10px;
+  font-size: 16px;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  transition: all 0.15s ease;
+}
+.tab-add:hover { color: var(--accent-color); background: rgba(137, 180, 250, 0.08); }
+
+/* ============================================================
+   Grid Container
+   ============================================================ */
+.grid-container {
+  padding: 10px;
+  display: none;
+}
+.grid-container.active { display: block; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: var(--grid-gap);
+}
+
+/* ============================================================
+   Launcher Button (base)
+   ============================================================ */
+.btn {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.12s ease;
+  border: 1px solid transparent;
+  overflow: hidden;
+}
+
+/* --- Empty Button --- */
+.btn.empty {
+  background: var(--bg-button-empty);
+  border: 1px dashed var(--border-color);
+}
+.btn.empty:hover {
+  border-color: var(--accent-color);
+  background: rgba(137, 180, 250, 0.06);
+}
+
+/* --- Registered App Button --- */
+.btn.app {
+  background: var(--bg-button);
+}
+.btn.app:hover {
+  background: var(--bg-button-hover);
+  border-color: var(--border-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+.btn.app:active {
+  background: var(--bg-button-active);
+  transform: translateY(0);
+}
+
+.btn-icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.btn-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 2px;
+  line-height: 1.2;
+}
+
+/* ============================================================
+   Widget Button
+   ============================================================ */
+.btn.widget {
+  background: var(--bg-button);
+  padding: 0;
+  border: 1px solid rgba(137, 180, 250, 0.15);
+}
+.btn.widget:hover {
+  border-color: var(--accent-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.widget-canvas-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.widget-canvas-wrapper canvas {
+  border-radius: calc(var(--border-radius) - 1px);
+}
+
+/* ============================================================
+   Context Menu
+   ============================================================ */
+.context-menu {
+  position: fixed;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 24px var(--shadow-color);
+  padding: 4px 0;
+  min-width: 180px;
+  z-index: 1000;
+  display: none;
+  font-size: 12px;
+}
+.context-menu.visible { display: block; }
+
+.context-menu-item {
+  padding: 6px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+}
+.context-menu-item:hover { background: var(--accent-color); color: #1e1e2e; }
+.context-menu-item.danger:hover { background: var(--danger-color); }
+
+.context-menu-separator {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 8px;
+}
+
+/* ============================================================
+   Tooltip
+   ============================================================ */
+.btn[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 4px 8px;
+  border-radius: var(--border-radius-sm);
+  font-size: 11px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* ============================================================
+   Theme Switcher (demo controls)
+   ============================================================ */
+.demo-controls {
+  padding: 12px 16px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  margin-top: 20px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.demo-controls label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-right: 4px;
+}
+
+.demo-btn {
+  padding: 5px 12px;
+  background: var(--bg-button);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.12s;
+}
+.demo-btn:hover { background: var(--bg-button-hover); border-color: var(--accent-color); }
+.demo-btn.active { background: var(--accent-color); color: #1e1e2e; border-color: var(--accent-color); }
+
+/* ============================================================
+   Badge (widget indicator)
+   ============================================================ */
+.widget-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  opacity: 0.7;
+}
+
+/* ============================================================
+   Status bar
+   ============================================================ */
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 10px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   Drag Overlay Preview
+   ============================================================ */
+.btn.drag-over {
+  border: 2px solid var(--accent-color) !important;
+  background: rgba(137, 180, 250, 0.12) !important;
+}
+
+/* ============================================================
+   Light theme overrides
+   ============================================================ */
+body.light {
+  --bg-primary: #eff1f5;
+  --bg-secondary: #e6e9ef;
+  --bg-button: #dce0e8;
+  --bg-button-hover: #ccd0da;
+  --bg-button-active: #bcc0cc;
+  --bg-button-empty: rgba(172, 176, 190, 0.25);
+  --text-primary: #4c4f69;
+  --text-secondary: #5c5f77;
+  --text-muted: #9ca0b0;
+  --border-color: #ccd0da;
+  --accent-color: #1e66f5;
+  --accent-hover: #2a6ef5;
+  --shadow-color: rgba(0, 0, 0, 0.12);
+  --danger-color: #d20f39;
+  --success-color: #40a02b;
+  --warning-color: #df8e1d;
+  background: #dce0e8;
+}
+
+body.classic {
+  --bg-primary: #d4d0c8;
+  --bg-secondary: #c0c0c0;
+  --bg-button: #d4d0c8;
+  --bg-button-hover: #e0dcd4;
+  --bg-button-active: #bab6ae;
+  --bg-button-empty: rgba(180, 176, 168, 0.35);
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --text-muted: #808080;
+  --border-color: #a0a0a0;
+  --accent-color: #0a246a;
+  --accent-hover: #0d2d80;
+  --shadow-color: rgba(0, 0, 0, 0.2);
+  --danger-color: #c0392b;
+  --success-color: #27ae60;
+  --warning-color: #e67e22;
+  --border-radius: 2px;
+  --border-radius-sm: 1px;
+  background: #a0a0a0;
+}
+
+/* ============================================================
+   Widget Settings Dialog (overlay)
+   ============================================================ */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+.dialog-overlay.visible { display: flex; }
+
+.dialog {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 16px 48px var(--shadow-color);
+  width: 380px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dialog-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dialog-close {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.dialog-close:hover { background: var(--bg-button-hover); }
+
+.dialog-body {
+  padding: 16px;
+}
+
+.dialog-body .form-group {
+  margin-bottom: 12px;
+}
+
+.dialog-body .form-group label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.dialog-body select,
+.dialog-body input[type="color"],
+.dialog-body input[type="text"] {
+  width: 100%;
+  background: var(--bg-button);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  padding: 5px 8px;
+  font-size: 12px;
+}
+
+.dialog-body input[type="color"] {
+  height: 30px;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.dialog-body .checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.dialog-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.dialog-footer button {
+  padding: 6px 16px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-button);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 12px;
+}
+.dialog-footer button:hover { background: var(--bg-button-hover); }
+.dialog-footer button.primary {
+  background: var(--accent-color);
+  color: #1e1e2e;
+  border-color: var(--accent-color);
+}
+.dialog-footer button.primary:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+<!-- ============================================================
+     Main Launcher Window
+     ============================================================ -->
+<div style="display: flex; flex-direction: column; align-items: center;">
+
+<div class="launcher-window" id="launcherWindow">
+  <!-- Title Bar -->
+  <div class="titlebar">
+    <button class="titlebar-menu-btn" title="メニュー">☰</button>
+    <span class="titlebar-title">MyLauncher</span>
+    <div class="titlebar-controls">
+      <button class="titlebar-btn" id="searchToggle" title="検索 (Ctrl+F)">🔍</button>
+      <button class="titlebar-btn" title="最小化">─</button>
+      <button class="titlebar-btn" title="最大化">☐</button>
+      <button class="titlebar-btn close" title="閉じる（トレイに格納）">✕</button>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-bar" id="searchBar">
+    <input type="text" class="search-input" placeholder="登録アイテムを検索..." />
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tabbar">
+    <div class="tab active" data-tab="tools">ツール</div>
+    <div class="tab" data-tab="games">ゲーム</div>
+    <div class="tab" data-tab="dev">開発</div>
+    <div class="tab" data-tab="widgets">ウィジェット</div>
+    <div class="tab-add" title="タブを追加">＋</div>
+  </div>
+
+  <!-- ==================== Tab: ツール ==================== -->
+  <div class="grid-container active" id="tab-tools">
+    <div class="grid">
+      <!-- Row 1 -->
+      <div class="btn app" data-tooltip="C:\Windows\explorer.exe" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">📁</div>
+        <div class="btn-label">Explorer</div>
+      </div>
+      <div class="btn app" data-tooltip="C:\Windows\System32\notepad.exe" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">📝</div>
+        <div class="btn-label">メモ帳</div>
+      </div>
+      <div class="btn app" data-tooltip="C:\Windows\System32\calc.exe" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">🔢</div>
+        <div class="btn-label">電卓</div>
+      </div>
+      <div class="btn app" data-tooltip="C:\Windows\System32\cmd.exe" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">⬛</div>
+        <div class="btn-label">CMD</div>
+      </div>
+      <div class="btn app" data-tooltip="C:\Program Files\Google\Chrome\Application\chrome.exe" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">🌐</div>
+        <div class="btn-label">Chrome</div>
+      </div>
+      <div class="btn app" data-tooltip="C:\Windows\System32\taskmgr.exe" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">📊</div>
+        <div class="btn-label">タスクMgr</div>
+      </div>
+      <!-- Analog Clock Widget -->
+      <div class="btn widget" data-tooltip="アナログ時計ウィジェット" oncontextmenu="showWidgetMenu(event)">
+        <div class="widget-badge"></div>
+        <div class="widget-canvas-wrapper">
+          <canvas id="analogClock" width="68" height="68"></canvas>
+        </div>
+      </div>
+      <!-- Digital Clock Widget -->
+      <div class="btn widget" data-tooltip="デジタル時計ウィジェット" oncontextmenu="showWidgetMenu(event)">
+        <div class="widget-badge"></div>
+        <div class="widget-canvas-wrapper">
+          <canvas id="digitalClock" width="68" height="68"></canvas>
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="btn app" data-tooltip="C:\Program Files\PowerShell\7\pwsh.exe" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">💻</div>
+        <div class="btn-label">PowerShell</div>
+      </div>
+      <div class="btn app" data-tooltip="C:\Users\user\AppData\Local\slack\slack.exe" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">💬</div>
+        <div class="btn-label">Slack</div>
+      </div>
+      <div class="btn app" data-tooltip="C:\Program Files\Microsoft Office\Office16\EXCEL.EXE" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">📗</div>
+        <div class="btn-label">Excel</div>
+      </div>
+      <div class="btn app" data-tooltip="C:\Program Files\Microsoft Office\Office16\WINWORD.EXE" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">📘</div>
+        <div class="btn-label">Word</div>
+      </div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <!-- CPU Monitor Widget -->
+      <div class="btn widget" data-tooltip="CPU モニター" oncontextmenu="showWidgetMenu(event)">
+        <div class="widget-badge"></div>
+        <div class="widget-canvas-wrapper">
+          <canvas id="cpuMonitor" width="68" height="68"></canvas>
+        </div>
+      </div>
+      <!-- Memory Monitor Widget -->
+      <div class="btn widget" data-tooltip="メモリモニター" oncontextmenu="showWidgetMenu(event)">
+        <div class="widget-badge"></div>
+        <div class="widget-canvas-wrapper">
+          <canvas id="memMonitor" width="68" height="68"></canvas>
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+
+      <!-- Row 4 -->
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <!-- Countdown Timer Widget -->
+      <div class="btn widget" data-tooltip="カウントダウンタイマー" oncontextmenu="showWidgetMenu(event)">
+        <div class="widget-badge"></div>
+        <div class="widget-canvas-wrapper">
+          <canvas id="countdownTimer" width="68" height="68"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== Tab: ゲーム ==================== -->
+  <div class="grid-container" id="tab-games">
+    <div class="grid">
+      <div class="btn app" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">🎮</div>
+        <div class="btn-label">Steam</div>
+      </div>
+      <div class="btn app" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">🟣</div>
+        <div class="btn-label">Epic Games</div>
+      </div>
+      <div class="btn app" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">🎯</div>
+        <div class="btn-label">Discord</div>
+      </div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <!-- Row 2-4: empty -->
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+    </div>
+  </div>
+
+  <!-- ==================== Tab: 開発 ==================== -->
+  <div class="grid-container" id="tab-dev">
+    <div class="grid">
+      <div class="btn app" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">🔷</div>
+        <div class="btn-label">VS Code</div>
+      </div>
+      <div class="btn app" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">🐙</div>
+        <div class="btn-label">GitHub</div>
+      </div>
+      <div class="btn app" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">🐳</div>
+        <div class="btn-label">Docker</div>
+      </div>
+      <div class="btn app" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">📦</div>
+        <div class="btn-label">Node.js</div>
+      </div>
+      <div class="btn app" oncontextmenu="showAppMenu(event)">
+        <div class="btn-icon">🦀</div>
+        <div class="btn-label">Rust</div>
+      </div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <!-- remaining empty -->
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+    </div>
+  </div>
+
+  <!-- ==================== Tab: ウィジェット ==================== -->
+  <div class="grid-container" id="tab-widgets">
+    <div class="grid">
+      <!-- Large widget area: multiple widget types demo -->
+      <div class="btn widget" oncontextmenu="showWidgetMenu(event)">
+        <div class="widget-badge"></div>
+        <div class="widget-canvas-wrapper">
+          <canvas id="analogClock2" width="68" height="68"></canvas>
+        </div>
+      </div>
+      <div class="btn widget" oncontextmenu="showWidgetMenu(event)">
+        <div class="widget-badge"></div>
+        <div class="widget-canvas-wrapper">
+          <canvas id="digitalClock2" width="68" height="68"></canvas>
+        </div>
+      </div>
+      <div class="btn widget" oncontextmenu="showWidgetMenu(event)">
+        <div class="widget-badge"></div>
+        <div class="widget-canvas-wrapper">
+          <canvas id="cpuMonitor2" width="68" height="68"></canvas>
+        </div>
+      </div>
+      <div class="btn widget" oncontextmenu="showWidgetMenu(event)">
+        <div class="widget-badge"></div>
+        <div class="widget-canvas-wrapper">
+          <canvas id="memMonitor2" width="68" height="68"></canvas>
+        </div>
+      </div>
+      <div class="btn widget" oncontextmenu="showWidgetMenu(event)">
+        <div class="widget-badge"></div>
+        <div class="widget-canvas-wrapper">
+          <canvas id="countdownTimer2" width="68" height="68"></canvas>
+        </div>
+      </div>
+      <div class="btn widget" oncontextmenu="showWidgetMenu(event)">
+        <div class="widget-badge"></div>
+        <div class="widget-canvas-wrapper">
+          <canvas id="dateCalendar" width="68" height="68"></canvas>
+        </div>
+      </div>
+      <!-- Analog clock variant: white background -->
+      <div class="btn widget" style="background:#e8e8e8;" oncontextmenu="showWidgetMenu(event)">
+        <div class="widget-badge"></div>
+        <div class="widget-canvas-wrapper">
+          <canvas id="analogClockWhite" width="68" height="68"></canvas>
+        </div>
+      </div>
+      <!-- Analog clock variant: green -->
+      <div class="btn widget" style="background:#1a3a2a;" oncontextmenu="showWidgetMenu(event)">
+        <div class="widget-badge"></div>
+        <div class="widget-canvas-wrapper">
+          <canvas id="analogClockGreen" width="68" height="68"></canvas>
+        </div>
+      </div>
+
+      <!-- remaining empty -->
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+      <div class="btn empty" oncontextmenu="showEmptyMenu(event)"></div>
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="statusbar">
+    <span>ツール — 10 アイテム / 32 スロット</span>
+    <span>Ctrl+Space で表示切替</span>
+  </div>
+</div>
+
+<!-- ============================================================
+     Demo Controls (テーマ切替 etc.)
+     ============================================================ -->
+<div class="demo-controls">
+  <label>テーマ:</label>
+  <button class="demo-btn active" onclick="setTheme('')">Dark</button>
+  <button class="demo-btn" onclick="setTheme('light')">Light</button>
+  <button class="demo-btn" onclick="setTheme('classic')">Classic</button>
+  <span style="color:var(--text-muted); margin-left: 12px;">※ 右クリックでコンテキストメニュー表示</span>
+</div>
+
+</div><!-- /flex container -->
+
+<!-- ============================================================
+     Context Menus
+     ============================================================ -->
+<!-- App button context menu -->
+<div class="context-menu" id="appContextMenu">
+  <div class="context-menu-item" onclick="hideMenus()">▶ 起動</div>
+  <div class="context-menu-item" onclick="hideMenus()">🛡 管理者として起動</div>
+  <div class="context-menu-separator"></div>
+  <div class="context-menu-item" onclick="hideMenus()">📋 プロパティ</div>
+  <div class="context-menu-item" onclick="hideMenus()">🎨 アイコン変更</div>
+  <div class="context-menu-item" onclick="hideMenus()">🔧 ウィジェットに変更</div>
+  <div class="context-menu-separator"></div>
+  <div class="context-menu-item" onclick="hideMenus()">📑 コピー</div>
+  <div class="context-menu-item" onclick="hideMenus()">✂ 切り取り</div>
+  <div class="context-menu-item" onclick="hideMenus()">📌 貼り付け</div>
+  <div class="context-menu-separator"></div>
+  <div class="context-menu-item danger" onclick="hideMenus()">🗑 登録解除</div>
+</div>
+
+<!-- Widget button context menu -->
+<div class="context-menu" id="widgetContextMenu">
+  <div class="context-menu-item" onclick="showWidgetSettings()">⚙ ウィジェット設定</div>
+  <div class="context-menu-item" onclick="hideMenus()">🔄 ウィジェットを変更</div>
+  <div class="context-menu-separator"></div>
+  <div class="context-menu-item" onclick="hideMenus()">📦 アイテムに変更</div>
+  <div class="context-menu-item danger" onclick="hideMenus()">🗑 ウィジェットを解除</div>
+</div>
+
+<!-- Empty button context menu -->
+<div class="context-menu" id="emptyContextMenu">
+  <div class="context-menu-item" onclick="hideMenus()">➕ アイテム登録</div>
+  <div class="context-menu-item" onclick="hideMenus()">🕐 ウィジェットを配置</div>
+  <div class="context-menu-separator"></div>
+  <div class="context-menu-item" onclick="hideMenus()">📌 貼り付け</div>
+</div>
+
+<!-- ============================================================
+     Widget Settings Dialog
+     ============================================================ -->
+<div class="dialog-overlay" id="widgetSettingsDialog">
+  <div class="dialog">
+    <div class="dialog-header">
+      <h3>⚙ ウィジェット設定 — アナログ時計</h3>
+      <button class="dialog-close" onclick="closeWidgetSettings()">✕</button>
+    </div>
+    <div class="dialog-body">
+      <div class="form-group">
+        <label>ウィジェット種別</label>
+        <select>
+          <option selected>アナログ時計</option>
+          <option>デジタル時計</option>
+          <option>カウントダウンタイマー</option>
+          <option>CPU モニター</option>
+          <option>メモリモニター</option>
+          <option>日付・カレンダー</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>背景色</label>
+        <input type="color" value="#313244" />
+      </div>
+      <div class="form-group">
+        <label>文字盤スタイル</label>
+        <select>
+          <option selected>シンプル</option>
+          <option>ローマン数字</option>
+          <option>ドット</option>
+          <option>なし</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>時針色</label>
+        <input type="color" value="#cdd6f4" />
+      </div>
+      <div class="form-group">
+        <label>分針色</label>
+        <input type="color" value="#cdd6f4" />
+      </div>
+      <div class="form-group">
+        <label>秒針色</label>
+        <input type="color" value="#f38ba8" />
+      </div>
+      <div class="checkbox-group">
+        <input type="checkbox" id="showSeconds" checked />
+        <label for="showSeconds">秒針を表示</label>
+      </div>
+      <div class="form-group">
+        <label>タイムゾーン</label>
+        <select>
+          <option selected>ローカル (Asia/Tokyo)</option>
+          <option>UTC</option>
+          <option>US/Eastern</option>
+          <option>Europe/London</option>
+        </select>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button onclick="closeWidgetSettings()">キャンセル</button>
+      <button class="primary" onclick="closeWidgetSettings()">適用</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     JavaScript
+     ============================================================ -->
+<script>
+// ── Tab switching ──
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.grid-container').forEach(g => g.classList.remove('active'));
+    tab.classList.add('active');
+    const target = document.getElementById('tab-' + tab.dataset.tab);
+    if (target) target.classList.add('active');
+  });
+});
+
+// ── Search toggle ──
+document.getElementById('searchToggle').addEventListener('click', () => {
+  document.getElementById('searchBar').classList.toggle('visible');
+});
+
+// ── Context menu helpers ──
+function showAppMenu(e) {
+  e.preventDefault();
+  hideMenus();
+  const menu = document.getElementById('appContextMenu');
+  positionMenu(menu, e);
+}
+function showWidgetMenu(e) {
+  e.preventDefault();
+  hideMenus();
+  const menu = document.getElementById('widgetContextMenu');
+  positionMenu(menu, e);
+}
+function showEmptyMenu(e) {
+  e.preventDefault();
+  hideMenus();
+  const menu = document.getElementById('emptyContextMenu');
+  positionMenu(menu, e);
+}
+function positionMenu(menu, e) {
+  menu.style.left = e.clientX + 'px';
+  menu.style.top = e.clientY + 'px';
+  menu.classList.add('visible');
+}
+function hideMenus() {
+  document.querySelectorAll('.context-menu').forEach(m => m.classList.remove('visible'));
+}
+document.addEventListener('click', hideMenus);
+document.addEventListener('contextmenu', (e) => {
+  if (!e.target.closest('.btn')) { e.preventDefault(); hideMenus(); }
+});
+
+// ── Widget Settings Dialog ──
+function showWidgetSettings() {
+  hideMenus();
+  document.getElementById('widgetSettingsDialog').classList.add('visible');
+}
+function closeWidgetSettings() {
+  document.getElementById('widgetSettingsDialog').classList.remove('visible');
+}
+
+// ── Theme switching ──
+function setTheme(theme) {
+  document.body.className = theme;
+  document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ============================================================
+//  Widget Renderers
+// ============================================================
+
+// ── Analog Clock ──
+function drawAnalogClock(canvasId, opts = {}) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const cx = w / 2, cy = h / 2;
+  const r = Math.min(cx, cy) - 4;
+  const bgColor = opts.bg || '#313244';
+  const dialColor = opts.dial || '#6c7086';
+  const hourColor = opts.hour || '#cdd6f4';
+  const minColor = opts.min || '#cdd6f4';
+  const secColor = opts.sec || '#f38ba8';
+  const textColor = opts.text || '#a6adc8';
+
+  function draw() {
+    const now = new Date();
+    ctx.clearRect(0, 0, w, h);
+
+    // Background
+    ctx.fillStyle = bgColor;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Border
+    ctx.strokeStyle = dialColor;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Hour markers
+    for (let i = 0; i < 12; i++) {
+      const angle = (i * Math.PI / 6) - Math.PI / 2;
+      const inner = i % 3 === 0 ? r - 8 : r - 5;
+      ctx.strokeStyle = dialColor;
+      ctx.lineWidth = i % 3 === 0 ? 2 : 1;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(angle) * inner, cy + Math.sin(angle) * inner);
+      ctx.lineTo(cx + Math.cos(angle) * (r - 2), cy + Math.sin(angle) * (r - 2));
+      ctx.stroke();
+    }
+
+    const hours = now.getHours() % 12;
+    const mins = now.getMinutes();
+    const secs = now.getSeconds();
+
+    // Hour hand
+    const hAngle = ((hours + mins / 60) * Math.PI / 6) - Math.PI / 2;
+    ctx.strokeStyle = hourColor;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(hAngle) * (r * 0.5), cy + Math.sin(hAngle) * (r * 0.5));
+    ctx.stroke();
+
+    // Minute hand
+    const mAngle = ((mins + secs / 60) * Math.PI / 30) - Math.PI / 2;
+    ctx.strokeStyle = minColor;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(mAngle) * (r * 0.72), cy + Math.sin(mAngle) * (r * 0.72));
+    ctx.stroke();
+
+    // Second hand
+    if (opts.showSec !== false) {
+      const sAngle = (secs * Math.PI / 30) - Math.PI / 2;
+      ctx.strokeStyle = secColor;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(sAngle) * (r * 0.78), cy + Math.sin(sAngle) * (r * 0.78));
+      ctx.stroke();
+    }
+
+    // Center dot
+    ctx.fillStyle = secColor;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── Digital Clock ──
+function drawDigitalClock(canvasId, opts = {}) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const bgColor = opts.bg || '#313244';
+  const textColor = opts.text || '#89b4fa';
+  const subColor = opts.sub || '#6c7086';
+  const is24h = opts.is24h !== false;
+
+  function draw() {
+    const now = new Date();
+    ctx.clearRect(0, 0, w, h);
+
+    // Background
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, w, h);
+
+    let hours = now.getHours();
+    let ampm = '';
+    if (!is24h) {
+      ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+    }
+    const mins = String(now.getMinutes()).padStart(2, '0');
+    const secs = String(now.getSeconds()).padStart(2, '0');
+
+    // Time
+    ctx.fillStyle = textColor;
+    ctx.font = 'bold 18px "Consolas", "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const timeStr = `${String(hours).padStart(2, '0')}:${mins}`;
+    ctx.fillText(timeStr, w / 2, h / 2 - (opts.showDate !== false ? 6 : 0));
+
+    // Seconds (small)
+    ctx.fillStyle = subColor;
+    ctx.font = '10px "Consolas", monospace';
+    ctx.fillText(`:${secs}`, w / 2 + 24, h / 2 - 10);
+
+    // Date
+    if (opts.showDate !== false) {
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+      ctx.fillStyle = subColor;
+      ctx.font = '10px sans-serif';
+      ctx.fillText(`${month}/${day} (${weekdays[now.getDay()]})`, w / 2, h / 2 + 14);
+    }
+
+    if (!is24h) {
+      ctx.fillStyle = subColor;
+      ctx.font = '9px sans-serif';
+      ctx.fillText(ampm, w / 2 + 24, h / 2 + 2);
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── System Monitor (CPU / Memory) ──
+function drawSystemMonitor(canvasId, opts = {}) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const cx = w / 2, cy = h / 2;
+  const bgColor = opts.bg || '#313244';
+  const label = opts.label || 'CPU';
+  const gaugeColor = opts.gauge || '#a6e3a1';
+  const warnColor = opts.warn || '#f38ba8';
+  const textColor = opts.text || '#cdd6f4';
+  const warnThreshold = opts.threshold || 80;
+  let currentValue = 30 + Math.random() * 40;
+  let targetValue = currentValue;
+
+  function draw() {
+    // Simulate fluctuation
+    if (Math.random() < 0.05) {
+      targetValue = 10 + Math.random() * 85;
+    }
+    currentValue += (targetValue - currentValue) * 0.08;
+    const value = Math.round(currentValue);
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Background
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, w, h);
+
+    // Gauge arc
+    const radius = 24;
+    const startAngle = 0.75 * Math.PI;
+    const endAngle = 2.25 * Math.PI;
+    const valueAngle = startAngle + (endAngle - startAngle) * (value / 100);
+    const color = value >= warnThreshold ? warnColor : gaugeColor;
+
+    // Background arc
+    ctx.strokeStyle = '#45475a';
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(cx, cy + 2, radius, startAngle, endAngle);
+    ctx.stroke();
+
+    // Value arc
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(cx, cy + 2, radius, startAngle, valueAngle);
+    ctx.stroke();
+
+    // Percentage text
+    ctx.fillStyle = color;
+    ctx.font = 'bold 14px "Consolas", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${value}%`, cx, cy + 2);
+
+    // Label
+    ctx.fillStyle = textColor;
+    ctx.font = '9px sans-serif';
+    ctx.fillText(label, cx, cy + 22);
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── Countdown Timer ──
+function drawCountdownTimer(canvasId, opts = {}) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const bgColor = opts.bg || '#313244';
+  const textColor = opts.text || '#fab387';
+  const subColor = opts.sub || '#6c7086';
+  const labelText = opts.label || 'リリース日';
+  // Target: 30 days from now
+  const target = opts.target || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+  function draw() {
+    const now = new Date();
+    const diff = Math.max(0, target - now);
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, w, h);
+
+    // Label
+    ctx.fillStyle = subColor;
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(labelText, w / 2, 6);
+
+    // Days
+    ctx.fillStyle = textColor;
+    ctx.font = 'bold 20px "Consolas", monospace';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${days}`, w / 2, h / 2 - 2);
+
+    // Days label
+    ctx.fillStyle = subColor;
+    ctx.font = '9px sans-serif';
+    ctx.fillText('日', w / 2 + 18, h / 2 - 2);
+
+    // HH:MM:SS
+    ctx.fillStyle = subColor;
+    ctx.font = '10px "Consolas", monospace';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(
+      `${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`,
+      w / 2, h - 6
+    );
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── Date Calendar ──
+function drawDateCalendar(canvasId, opts = {}) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const bgColor = opts.bg || '#313244';
+  const accentColor = opts.accent || '#f38ba8';
+  const textColor = opts.text || '#cdd6f4';
+
+  function draw() {
+    const now = new Date();
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, w, h);
+
+    // Month header bar
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(0, 0, w, 18);
+    const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    ctx.fillStyle = '#1e1e2e';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(months[now.getMonth()], w / 2, 10);
+
+    // Day number
+    ctx.fillStyle = textColor;
+    ctx.font = 'bold 26px sans-serif';
+    ctx.fillText(String(now.getDate()), w / 2, h / 2 + 6);
+
+    // Weekday
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    ctx.fillStyle = '#a6adc8';
+    ctx.font = '10px sans-serif';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(weekdays[now.getDay()], w / 2, h - 5);
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ============================================================
+//  Initialize all widgets
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+  // Tab: ツール - widgets
+  drawAnalogClock('analogClock');
+  drawDigitalClock('digitalClock');
+  drawSystemMonitor('cpuMonitor', { label: 'CPU', gauge: '#a6e3a1' });
+  drawSystemMonitor('memMonitor', { label: 'MEM', gauge: '#89b4fa' });
+  drawCountdownTimer('countdownTimer');
+
+  // Tab: ウィジェット - widgets
+  drawAnalogClock('analogClock2');
+  drawDigitalClock('digitalClock2');
+  drawSystemMonitor('cpuMonitor2', { label: 'CPU', gauge: '#a6e3a1' });
+  drawSystemMonitor('memMonitor2', { label: 'MEM', gauge: '#89b4fa' });
+  drawCountdownTimer('countdownTimer2');
+  drawDateCalendar('dateCalendar');
+  drawAnalogClock('analogClockWhite', {
+    bg: '#e8e8e8', dial: '#999', hour: '#333', min: '#555', sec: '#e74c3c', text: '#666'
+  });
+  drawAnalogClock('analogClockGreen', {
+    bg: '#1a3a2a', dial: '#2d6a4f', hour: '#95d5b2', min: '#74c69d', sec: '#d9ed92', text: '#52b788'
+  });
+});
+</script>
+</body>
+</html>

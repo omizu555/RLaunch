@@ -1,0 +1,212 @@
+/* ============================================================
+   LauncherGrid - グリッド & ボタンスタイル
+   ============================================================ */
+
+/* --- Grid Area --- */
+.grid-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols, 8), var(--cell-size, 64px));
+  grid-template-rows: repeat(var(--grid-rows, 4), var(--cell-size, 64px));
+  gap: var(--grid-gap);
+}
+
+/* --- Launcher Button --- */
+.btn {
+  width: var(--cell-size, 64px);
+  height: var(--cell-size, 64px);
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.1s ease;
+  border: 1px solid transparent;
+  overflow: hidden;
+  background: var(--bg-button);
+}
+.btn:hover {
+  background: var(--bg-button-hover);
+  border-color: var(--border-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+.btn:active {
+  background: var(--bg-button-active);
+  transform: translateY(0);
+}
+
+.btn.empty {
+  background: var(--bg-button-empty);
+  border: 1px dashed var(--border-color);
+}
+.btn.empty:hover {
+  border-color: var(--accent-color);
+  background: rgba(137, 180, 250, 0.06);
+  transform: none;
+  box-shadow: none;
+}
+
+.btn.drag-over {
+  border: 2px solid var(--accent-color) !important;
+  background: rgba(137, 180, 250, 0.12) !important;
+  transform: scale(1.05);
+}
+
+/* ドラッグ中のソースアイテム */
+.btn.dragging {
+  opacity: 0.4;
+  transform: scale(0.92);
+  border: 2px dashed var(--accent-color) !important;
+}
+
+/* P-30: スパンウィジェットのコンテナ */
+.span-cell > .btn {
+  width: 100%;
+  height: 100%;
+}
+.span-cell > .btn canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* --- Button Icon --- */
+.btn-icon {
+  width: calc(var(--cell-size, 64px) * 0.5);
+  height: calc(var(--cell-size, 64px) * 0.5);
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.btn-icon .emoji {
+  font-size: 24px;
+  line-height: 1;
+}
+
+/* --- Button Label --- */
+.btn-label {
+  font-size: var(--label-font-size, 10px);
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 2px;
+  line-height: 1.2;
+}
+
+/* --- Widget Button --- */
+.btn.widget {
+  border: 1px solid rgba(137, 180, 250, 0.15);
+  padding: 0;
+  overflow: hidden;
+}
+.btn.widget:hover {
+  border-color: var(--accent-color);
+}
+.btn.widget canvas {
+  pointer-events: auto;
+}
+
+.widget-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  opacity: 0.6;
+}
+
+/* --- Focus (キーボードナビ) --- */
+.grid:focus {
+  outline: none;
+}
+.btn.focused {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 2px rgba(137, 180, 250, 0.35);
+}
+
+/* --- Group Button (サブグループ) --- */
+.btn.group-btn {
+  border: 1px solid rgba(137, 180, 250, 0.15);
+}
+.btn.group-btn:hover {
+  border-color: var(--accent-color);
+}
+.group-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+.group-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--accent-color);
+  color: #1e1e2e;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* P-11: ドラッグゴースト */
+.drag-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px var(--shadow-color);
+  opacity: 0.9;
+  max-width: 180px;
+}
+.drag-ghost img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+.drag-ghost span {
+  font-size: 14px;
+}
+.drag-ghost-label {
+  font-size: 11px !important;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* P-38: パス無効警告マーク */
+.path-warning {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  font-size: 12px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}

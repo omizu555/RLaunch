@@ -1,0 +1,119 @@
+/* ============================================================
+   GroupPopup - サブグループポップアップ表示（独立ウィンドウ版）
+   グループボタンをクリックすると独立ウィンドウとして表示されるミニランチャー。
+   ============================================================ */
+
+.group-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.group-popup-header button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  line-height: 1;
+}
+.group-popup-header button:hover {
+  color: var(--text-primary);
+}
+
+.group-popup-grid {
+  display: grid;
+  gap: var(--grid-gap, 6px);
+  padding: 8px;
+}
+
+.group-popup-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}
+.group-popup-footer button {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 2px 10px;
+  font-size: 11px;
+}
+.group-popup-footer button:hover {
+  background: var(--bg-button-hover);
+  color: var(--text-primary);
+}
+
+.group-popup-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* ── 独立ウィンドウ版 ── */
+.group-popup-window {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 13px;
+  overflow: hidden;
+}
+.group-popup-window .group-popup-grid {
+  flex: 1;
+  overflow: auto;
+}
+
+/* ── D&D ドロップインジケーター ── */
+.group-popup-drop-indicator {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--accent-color);
+  border-radius: 6px;
+  pointer-events: none;
+  background: rgba(var(--accent-rgb, 100, 149, 237), 0.15);
+}
+
+/* ── 右クリックコンテキストメニュー ── */
+.group-popup-context-menu {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 999;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 2px 0;
+  font-size: 11px;
+  min-width: 140px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.group-popup-context-item {
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+.group-popup-context-item:hover {
+  background: var(--bg-hover);
+}
+.group-popup-context-item.muted {
+  color: var(--text-muted);
+}

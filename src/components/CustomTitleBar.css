@@ -1,0 +1,97 @@
+/* ============================================================
+   CustomTitleBar - タイトルバースタイル
+   ============================================================ */
+.titlebar {
+  display: flex;
+  align-items: center;
+  height: var(--titlebar-height);
+  background: var(--bg-secondary);
+  padding: 0 8px;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.titlebar-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.3px;
+}
+
+.titlebar-spacer {
+  flex: 1;
+  height: 100%;
+}
+
+.titlebar-btn {
+  width: 32px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+  transition: background 0.1s, color 0.1s;
+}
+.titlebar-btn:hover {
+  background: var(--bg-button-hover);
+  color: var(--text-primary);
+}
+.titlebar-btn.close:hover {
+  background: var(--danger-color);
+  color: #fff;
+}
+
+.titlebar-menu-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.titlebar-menu-btn:hover {
+  background: var(--bg-button-hover);
+  color: var(--text-primary);
+}
+
+.titlebar-controls {
+  display: flex;
+  gap: 2px;
+}
+
+/* ピン留めボタン */
+.titlebar-btn.pin-btn {
+  position: relative;
+  transition: background 0.2s, color 0.2s, transform 0.3s;
+}
+.titlebar-btn.pin-btn .pin-icon {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+/* ピン留め OFF: 45度傾き */
+.titlebar-btn.pin-btn:not(.pinned) .pin-icon {
+  transform: rotate(45deg);
+  opacity: 0.6;
+}
+/* ピン留め ON: 強調表示 */
+.titlebar-btn.pin-btn.pinned {
+  color: var(--accent-color);
+  background: rgba(137, 180, 250, 0.25);
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 0 8px rgba(137, 180, 250, 0.5), inset 0 0 4px rgba(137, 180, 250, 0.2);
+}
+.titlebar-btn.pin-btn.pinned .pin-icon {
+  transform: rotate(0deg);
+  filter: drop-shadow(0 0 4px var(--accent-color));
+}

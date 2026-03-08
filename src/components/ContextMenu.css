@@ -1,0 +1,56 @@
+/* ============================================================
+   ContextMenu - 右クリックメニュースタイル
+   ============================================================ */
+.context-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+
+.context-menu {
+  position: fixed;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 24px var(--shadow-color);
+  padding: 4px 0;
+  min-width: 180px;
+  z-index: 1000;
+  font-size: 12px;
+}
+
+.context-menu-item {
+  padding: 6px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+}
+.context-menu-item:hover {
+  background: var(--accent-color);
+  color: #1e1e2e;
+}
+.context-menu-item.danger:hover {
+  background: var(--danger-color);
+}
+
+.context-menu-info {
+  font-size: 10px;
+  color: var(--text-muted);
+  cursor: default;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+.context-menu-info:hover {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.context-menu-separator {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 8px;
+}
