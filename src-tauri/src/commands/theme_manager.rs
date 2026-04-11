@@ -191,9 +191,12 @@ pub fn init_themes(app: tauri::AppHandle) -> Result<(), String> {
     if !themes_dir.exists() {
         fs::create_dir_all(&themes_dir)
             .map_err(|e| format!("Failed to create themes dir: {}", e))?;
+    }
 
-        // ビルトインテーマを書き出し
-        for theme in builtin_themes() {
+    // ビルトインテーマが未書き出しなら追加
+    for theme in builtin_themes() {
+        let path = themes_dir.join(format!("{}.json", theme.id));
+        if !path.exists() {
             write_theme(&themes_dir, &theme)?;
         }
     }
