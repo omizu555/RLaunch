@@ -22,7 +22,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { emit, listen } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { open as dialogOpen } from "@tauri-apps/plugin-dialog";
-import type { GroupItem, GridCell, LauncherItem } from "../types";
+import type { GroupItem, GridCell } from "../types";
+import { isLauncherItem } from "../types";
 import { createLauncherItemFromPath } from "../utils/fileRegistration";
 import { buildCellArray } from "../utils/domHelpers";
 import { useNativeDrop } from "../hooks/useNativeDrop";
@@ -167,7 +168,7 @@ export function GroupPopupWindow() {
       setGroup(event.payload.group);
       setContext(null);
       const label = event.payload.group.label;
-      getCurrentWebviewWindow().setTitle(`📂 ${label}`).catch(() => {});
+      getCurrentWebviewWindow().setTitle(`📂 ${label}`).catch((e) => console.warn("Failed to set title:", e));
       // reusable ウィンドウなのでテーマ変更に追従
       refreshTheme();
     });
@@ -219,11 +220,10 @@ export function GroupPopupWindow() {
   const handleCellClick = useCallback(
     async (_index: number, cell: GridCell) => {
       if (justDragged.current) return;
-      if (!cell || cell.type === "widget" || cell.type === "group") return;
-      const item = cell as LauncherItem;
+      if (!isLauncherItem(cell)) return;
       try {
-        await invoke("launch_app", { path: item.path, args: item.args ?? null });
-        await emit("group-popup-launch", { item });
+        await invoke("launch_app", { path: cell.path, args: cell.args ?? null });
+        await emit("group-popup-launch", { item: cell });
         closeWindow();
       } catch (e) {
         console.error("Failed to launch:", e);

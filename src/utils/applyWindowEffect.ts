@@ -17,5 +17,5 @@ export function applyWindowEffect(themes: ThemeInfo[], themeId: string): void {
   const opacity = theme?.variables["--window-opacity"] ?? "1";
   document.documentElement.style.setProperty("--window-opacity", opacity);
   const effect = theme?.variables["--window-effect"] ?? "none";
-  invoke("set_window_effect", { effect }).catch(() => {});
+  invoke("set_window_effect", { effect }).catch((e) => console.warn("Failed to apply window effect:", e));
 }

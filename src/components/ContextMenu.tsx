@@ -3,6 +3,7 @@
    ============================================================ */
 import "./ContextMenu.css";
 import type { GridCell, LauncherItem, GroupItem } from "../types";
+import { isGroupItem } from "../types";
 
 export interface MenuPosition {
   x: number;
@@ -95,11 +96,10 @@ export function ContextMenu({
   }
 
   // グループ
-  if (cell.type === "group") {
-    const group = cell as GroupItem;
+  if (isGroupItem(cell)) {
     return (
       <ContextMenuWrapper pos={pos} onClose={onClose}>
-        <div className="context-menu-item" onClick={() => { onEditGroup?.(group); onClose(); }}>
+        <div className="context-menu-item" onClick={() => { onEditGroup?.(cell); onClose(); }}>
           ✏ グループ名を変更
         </div>
         <div className="context-menu-separator" />
@@ -111,7 +111,7 @@ export function ContextMenu({
   }
 
   // アプリボタン
-  const item = cell as LauncherItem;
+  const item: LauncherItem = cell as LauncherItem;
   const isFolder = item.type === "folder";
   const folderAction = item.folderAction ?? "open";
   return (

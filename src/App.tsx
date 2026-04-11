@@ -6,6 +6,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import "./App.css";
 import type { AppSettings, WidgetItem, GroupItem, GridCell, LauncherItem } from "./types";
+import { isLauncherItem } from "./types";
 import { NOTIFICATION_DURATION } from "./constants";
 import { CustomTitleBar } from "./components/CustomTitleBar";
 import { TabBar } from "./components/TabBar";
@@ -70,7 +71,7 @@ function App() {
     listThemes().then((t) => {
       setThemes(t);
       themesRef.current = t;
-    }).catch(() => {});
+    }).catch((e) => console.error("Failed to load themes:", e));
   }, []);
 
   // 設定のテーマが変わったら CSS 変数 + 透過効果を動的適用
@@ -90,12 +91,11 @@ function App() {
         const { exists } = await import("@tauri-apps/plugin-fs");
         const bad = new Set<string>();
         for (const cell of activeTab.items) {
-          if (!cell || cell.type === "widget" || cell.type === "group") continue;
-          const item = cell as LauncherItem;
-          if (item.type === "url") continue;
-          if (item.path) {
-            const ok = await exists(item.path);
-            if (!ok && !cancelled) bad.add(item.id);
+          if (!isLauncherItem(cell)) continue;
+          if (cell.type === "url") continue;
+          if (cell.path) {
+            const ok = await exists(cell.path);
+            if (!ok && !cancelled) bad.add(cell.id);
           }
         }
         if (!cancelled) setInvalidPaths(bad);
@@ -256,7 +256,7 @@ function App() {
             if (!focused) {
               getCurrentWebviewWindow().hide();
             }
-          }).catch(() => {});
+          }).catch((e) => console.error("Failed to check focus:", e));
         }, 100);
       }
     },
@@ -350,7 +350,7 @@ function App() {
     (index: number) => {
       const item = activeTab?.items[index];
       if (item?.type === "widget") {
-        openWidgetSettingsWindow(item as WidgetItem, index);
+        openWidgetSettingsWindow(item as WidgetItem, index);  // type narrowing through isWidgetItem not applicable here
       }
     },
     [activeTab, openWidgetSettingsWindow],

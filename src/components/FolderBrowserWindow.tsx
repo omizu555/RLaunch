@@ -33,7 +33,7 @@ export function FolderBrowserWindow() {
       setCurrentPath(dirPath);
       // ウィンドウタイトルを更新
       const folderName = dirPath.split(/[\\/]/).pop() || dirPath;
-      getCurrentWebviewWindow().setTitle(`📂 ${folderName}`).catch(() => {});
+      getCurrentWebviewWindow().setTitle(`📂 ${folderName}`).catch((e) => console.warn("Failed to set title:", e));
     } catch (e) {
       setError(String(e));
       setEntries([]);

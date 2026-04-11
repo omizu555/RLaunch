@@ -5,6 +5,7 @@
 import { useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import type { GridCell, LauncherItem } from "../types";
+import { isLauncherItem } from "../types";
 
 interface UseLauncherOptions {
   hideOnLaunch: boolean;
@@ -34,12 +35,11 @@ export function useLauncher({ hideOnLaunch, pinned, onNotify, onItemLaunched }: 
   /** 通常起動 (GridCell / LauncherItem 両対応) */
   const launch = useCallback(
     async (cell: GridCell | LauncherItem) => {
-      if (!cell || cell.type === "widget" || cell.type === "group") return;
-      const item = cell as LauncherItem;
+      if (!isLauncherItem(cell)) return;
       try {
         await invoke("launch_app", {
-          path: item.path,
-          args: item.args ?? null,
+          path: cell.path,
+          args: cell.args ?? null,
         });
         await hideWindow();
       } catch (e) {
@@ -53,12 +53,11 @@ export function useLauncher({ hideOnLaunch, pinned, onNotify, onItemLaunched }: 
   /** 管理者として起動 */
   const launchAdmin = useCallback(
     async (cell: GridCell | LauncherItem) => {
-      if (!cell || cell.type === "widget" || cell.type === "group") return;
-      const item = cell as LauncherItem;
+      if (!isLauncherItem(cell)) return;
       try {
         await invoke("run_as_admin", {
-          path: item.path,
-          args: item.args ?? null,
+          path: cell.path,
+          args: cell.args ?? null,
         });
         onNotify("管理者として起動しました");
         await hideWindow();
@@ -73,10 +72,9 @@ export function useLauncher({ hideOnLaunch, pinned, onNotify, onItemLaunched }: 
   /** ファイルの場所を開く */
   const openLocation = useCallback(
     async (cell: GridCell | LauncherItem) => {
-      if (!cell || cell.type === "widget" || cell.type === "group") return;
-      const item = cell as LauncherItem;
+      if (!isLauncherItem(cell)) return;
       try {
-        await invoke("open_file_location", { path: item.path });
+        await invoke("open_file_location", { path: cell.path });
       } catch (e) {
         console.error("Failed to open file location:", e);
         onNotify("ファイルの場所を開けませんでした");
@@ -88,11 +86,9 @@ export function useLauncher({ hideOnLaunch, pinned, onNotify, onItemLaunched }: 
   /** セルクリック起動 (handleCellClick の統合版) — 起動統計も記録 */
   const launchFromCell = useCallback(
     async (index: number, cell: GridCell) => {
-      if (!cell || cell.type === "widget" || cell.type === "group") return;
-      const item = cell as LauncherItem;
-      await launch(item);
-      // 起動統計をコールバックで永続化
-      onItemLaunched?.(index, withLaunchStats(item));
+      if (!isLauncherItem(cell)) return;
+      await launch(cell);
+      onItemLaunched?.(index, withLaunchStats(cell));
     },
     [launch, onItemLaunched]
   );

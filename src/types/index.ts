@@ -5,6 +5,7 @@
 
 // ── ランチャー基本型 ──
 export type { ItemType, WindowState, FolderAction, LauncherItem, WidgetItem, GroupItem, GridCell, Tab } from "./core";
+export { isWidgetItem, isGroupItem, isLauncherItem } from "./core";
 
 // ── ウィジェット型 ──
 export type {

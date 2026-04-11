@@ -4,6 +4,7 @@
 import "./SearchBar.css";
 import { useState, useEffect, useRef, useMemo } from "react";
 import type { Tab, LauncherItem } from "../types";
+import { isLauncherItem } from "../types";
 
 interface SearchResult {
   tabId: string;
@@ -37,17 +38,16 @@ export function SearchBar({ tabs, onNavigate, onLaunch, onClose }: SearchBarProp
     for (const tab of tabs) {
       for (let i = 0; i < tab.items.length; i++) {
         const cell = tab.items[i];
-        if (!cell || cell.type === "widget" || cell.type === "group") continue;
-        const item = cell as LauncherItem;
+        if (!isLauncherItem(cell)) continue;
         if (
-          item.label.toLowerCase().includes(q) ||
-          item.path.toLowerCase().includes(q)
+          cell.label.toLowerCase().includes(q) ||
+          cell.path.toLowerCase().includes(q)
         ) {
           matches.push({
             tabId: tab.id,
             tabLabel: tab.label,
             index: i,
-            item,
+            item: cell,
           });
         }
       }

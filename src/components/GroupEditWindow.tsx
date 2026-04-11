@@ -78,7 +78,7 @@ export function GroupEditWindow() {
     });
 
     // アイコンライブラリの読み込み
-    invoke<IconInfo[]>("list_icon_library").then(setIconLibrary).catch(() => {});
+    invoke<IconInfo[]>("list_icon_library").then(setIconLibrary).catch((e) => console.error("Failed to load icon library:", e));
 
     // ready 通知を送出
     emit("group-edit-ready");

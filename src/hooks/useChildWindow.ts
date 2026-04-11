@@ -232,7 +232,7 @@ export function useChildWindow<TInit, TResult>(
   useEffect(() => {
     return () => {
       if (config.reusable && windowRef.current) {
-        windowRef.current.close().catch(() => {});
+        windowRef.current.close().catch((e) => console.warn("Failed to close child window:", e));
         windowRef.current = null;
       }
     };

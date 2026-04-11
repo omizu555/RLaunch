@@ -1,7 +1,8 @@
 /* ============================================================
    LauncherButton - 個別ボタン
    ============================================================ */
-import type { GridCell, LauncherItem, WidgetItem, GroupItem } from "../types";
+import type { GridCell, LauncherItem } from "../types";
+import { isWidgetItem, isGroupItem } from "../types";
 import { WidgetRenderer } from "../widgets/WidgetRenderer";
 
 /** グループのデフォルトフォルダアイコン (SVG data URL) */
@@ -62,56 +63,54 @@ export function LauncherButton({
   }
 
   // ウィジェットボタン — Canvas 描画
-  if (cell.type === "widget") {
-    const widget = cell as WidgetItem;
+  if (isWidgetItem(cell)) {
     return (
       <div
         className={`btn widget ${isDragOver ? "drag-over" : ""} ${isDragSource ? "dragging" : ""} ${isFocused ? "focused" : ""}`}
         data-cell-index={index}
         role="gridcell"
-        aria-label={`ウィジェット: ${widget.label ?? widget.widgetType}`}
+        aria-label={`ウィジェット: ${cell.label ?? cell.widgetType}`}
         onPointerDown={(e) => onPointerDown?.(e, index)}
         onContextMenu={(e) => onContextMenu(e, index, cell)}
         onClick={() => onClick(index, cell)}
-        title={widget.label ?? widget.widgetType}
+        title={cell.label ?? cell.widgetType}
       >
-        <WidgetRenderer widget={widget} />
+        <WidgetRenderer widget={cell} />
       </div>
     );
   }
 
   // グループボタン — サブフォルダ的な存在
-  if (cell.type === "group") {
-    const group = cell as GroupItem;
-    const childCount = group.items.filter(Boolean).length;
+  if (isGroupItem(cell)) {
+    const childCount = cell.items.filter(Boolean).length;
     return (
       <div
         className={`btn group-btn ${isDragOver ? "drag-over" : ""} ${isDragSource ? "dragging" : ""} ${isFocused ? "focused" : ""}`}
         data-cell-index={index}
         role="gridcell"
-        aria-label={`グループ: ${group.label} (${childCount} アイテム)`}
+        aria-label={`グループ: ${cell.label} (${childCount} アイテム)`}
         onPointerDown={(e) => onPointerDown?.(e, index)}
         onContextMenu={(e) => onContextMenu(e, index, cell)}
         onClick={() => onClick(index, cell)}
-        title={`${group.label} (${childCount} アイテム)`}
+        title={`${cell.label} (${childCount} アイテム)`}
       >
         <div className="btn-icon">
-          {group.iconBase64 ? (
-            <img src={group.iconBase64.startsWith('data:') ? group.iconBase64 : `data:image/png;base64,${group.iconBase64}`} alt={group.label} draggable={false} />
-          ) : group.icon && group.icon !== "📂" ? (
-            <span className="group-icon" style={group.iconColor ? { color: group.iconColor } : undefined}>{group.icon}</span>
+          {cell.iconBase64 ? (
+            <img src={cell.iconBase64.startsWith('data:') ? cell.iconBase64 : `data:image/png;base64,${cell.iconBase64}`} alt={cell.label} draggable={false} />
+          ) : cell.icon && cell.icon !== "📂" ? (
+            <span className="group-icon" style={cell.iconColor ? { color: cell.iconColor } : undefined}>{cell.icon}</span>
           ) : (
-            <img src={DEFAULT_GROUP_ICON} alt={group.label} draggable={false} />
+            <img src={DEFAULT_GROUP_ICON} alt={cell.label} draggable={false} />
           )}
         </div>
-        {showLabels && <div className="btn-label">{group.label}</div>}
+        {showLabels && <div className="btn-label">{cell.label}</div>}
         {childCount > 0 && <span className="group-badge">{childCount}</span>}
       </div>
     );
   }
 
   // アプリボタン
-  const item = cell as LauncherItem;
+  const item: LauncherItem = cell;
   return (
     <div
       className={`btn ${isDragOver ? "drag-over" : ""} ${isDragSource ? "dragging" : ""} ${isFocused ? "focused" : ""}`}

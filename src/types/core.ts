@@ -73,6 +73,20 @@ export interface GroupItem {
 /** グリッドセル: アプリ / ウィジェット / グループ / 空 */
 export type GridCell = LauncherItem | WidgetItem | GroupItem | null;
 
+// ── 型ガード関数 ──
+
+export function isWidgetItem(cell: GridCell): cell is WidgetItem {
+  return cell !== null && cell.type === "widget";
+}
+
+export function isGroupItem(cell: GridCell): cell is GroupItem {
+  return cell !== null && cell.type === "group";
+}
+
+export function isLauncherItem(cell: GridCell): cell is LauncherItem {
+  return cell !== null && cell.type !== "widget" && cell.type !== "group";
+}
+
 /** タブデータ */
 export interface Tab {
   id: string;

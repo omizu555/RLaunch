@@ -60,10 +60,10 @@ export function SettingsWindow() {
 
     let cleanupRef: (() => void) | null = null;
     init();
-    invoke<string>("get_store_path").then(setStorePath).catch(() => {});
+    invoke<string>("get_store_path").then(setStorePath).catch((e) => console.error("Failed to get store path:", e));
     // テーマ一覧を動的に取得
-    listThemes().then(setThemes).catch(() => {});
-    getThemesDirPath().then(setThemesDir).catch(() => {});
+    listThemes().then(setThemes).catch((e) => console.error("Failed to load themes:", e));
+    getThemesDirPath().then(setThemesDir).catch((e) => console.error("Failed to get themes dir:", e));
 
     return () => {
       cancelled = true;

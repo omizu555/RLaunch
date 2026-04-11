@@ -3,7 +3,8 @@
    ============================================================ */
 import "./LauncherGrid.css";
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
-import type { Tab, GridCell, LauncherItem, GroupItem, WidgetItem } from "../types";
+import type { Tab, GridCell, LauncherItem, GroupItem } from "../types";
+import { isWidgetItem, isGroupItem } from "../types";
 import { LauncherButton, DEFAULT_GROUP_ICON } from "./LauncherButton";
 import { ContextMenu, type MenuPosition } from "./ContextMenu";
 
@@ -226,10 +227,9 @@ export function LauncherGrid({
     const cols = tab.gridColumns;
     for (let i = 0; i < totalCells; i++) {
       const cell = cells[i];
-      if (cell?.type === "widget") {
-        const w = cell as WidgetItem;
-        const cs = w.colSpan ?? 1;
-        const rs = w.rowSpan ?? 1;
+      if (isWidgetItem(cell)) {
+        const cs = cell.colSpan ?? 1;
+        const rs = cell.rowSpan ?? 1;
         if (cs > 1 || rs > 1) {
           const startCol = i % cols;
           const startRow = Math.floor(i / cols);
@@ -264,12 +264,12 @@ export function LauncherGrid({
         {cells.map((cell, i) => {
           // P-30: スパンウィジェットにカバーされたセルはスキップ
           if (coveredCells.has(i)) return null;
-          const isSpanWidget = cell?.type === "widget" && (
-            ((cell as WidgetItem).colSpan ?? 1) > 1 || ((cell as WidgetItem).rowSpan ?? 1) > 1
+          const isSpanWidget = isWidgetItem(cell) && (
+            (cell.colSpan ?? 1) > 1 || (cell.rowSpan ?? 1) > 1
           );
-          const spanStyle: React.CSSProperties = isSpanWidget ? {
-            gridColumn: `span ${(cell as WidgetItem).colSpan ?? 1}`,
-            gridRow: `span ${(cell as WidgetItem).rowSpan ?? 1}`,
+          const spanStyle: React.CSSProperties = isSpanWidget && isWidgetItem(cell) ? {
+            gridColumn: `span ${cell.colSpan ?? 1}`,
+            gridRow: `span ${cell.rowSpan ?? 1}`,
           } : {};
           return (
             <div key={i} style={spanStyle} className={isSpanWidget ? "span-cell" : undefined}>
@@ -280,7 +280,7 @@ export function LauncherGrid({
                 isDragSource={dragSource === i}
                 isDragOver={displayDragOver === i}
                 isFocused={focusedIndex === i}
-                invalidPath={!!(cell && "id" in cell && invalidPaths?.has((cell as {id: string}).id))}
+                invalidPath={!!(cell && invalidPaths?.has(cell.id))}
                 onContextMenu={handleContextMenu}
                 onClick={handleCellClick}
                 onPointerDown={handleCellPointerDown}
@@ -354,21 +354,22 @@ export function LauncherGrid({
       {dragSource !== null && ghostPos && (() => {
         const dragCell = tab.items[dragSource] ?? null;
         if (!dragCell) return null;
-        const label = dragCell.type === "group"
-          ? (dragCell as GroupItem).label
-          : dragCell.type === "widget"
-            ? ((dragCell as WidgetItem).label ?? (dragCell as WidgetItem).widgetType)
-            : (dragCell as LauncherItem).label;
-        const icon = dragCell.type === "widget" ? "🕐"
-          : dragCell.type === "group" ? undefined
-          : (dragCell as LauncherItem).iconBase64
-            ? undefined
-            : getTypeEmoji((dragCell as LauncherItem).type);
-        const iconBase64 = dragCell.type === "group"
-          ? (dragCell as GroupItem).iconBase64
-          : dragCell.type !== "widget"
-          ? (dragCell as LauncherItem).iconBase64
-          : undefined;
+        let label: string;
+        let icon: string | undefined;
+        let iconBase64: string | undefined;
+        if (isGroupItem(dragCell)) {
+          label = dragCell.label;
+          icon = undefined;
+          iconBase64 = dragCell.iconBase64;
+        } else if (isWidgetItem(dragCell)) {
+          label = dragCell.label ?? dragCell.widgetType;
+          icon = "🕐";
+          iconBase64 = undefined;
+        } else {
+          label = dragCell.label;
+          icon = dragCell.iconBase64 ? undefined : getTypeEmoji(dragCell.type);
+          iconBase64 = dragCell.iconBase64;
+        }
         return (
           <div
             className="drag-ghost"

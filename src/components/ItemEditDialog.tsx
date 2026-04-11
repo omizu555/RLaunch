@@ -39,7 +39,7 @@ export function ItemEditDialog({ item, onSave, onClose }: ItemEditDialogProps) {
 
   // アイコンライブラリの読み込み
   useEffect(() => {
-    invoke<IconInfo[]>("list_icon_library").then(setIconLibrary).catch(() => {});
+    invoke<IconInfo[]>("list_icon_library").then(setIconLibrary).catch((e) => console.error("Failed to load icon library:", e));
   }, []);
 
   // Escape で閉じる
