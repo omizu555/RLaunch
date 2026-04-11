@@ -201,30 +201,64 @@ pub fn init_themes(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// テーマ一覧を取得（themes/ フォルダをスキャン）
+/// テーマ一覧を取得（themes/ フォルダ + リソースのサンプルテーマをスキャン）
 #[tauri::command]
 pub fn list_themes(app: tauri::AppHandle) -> Result<Vec<ThemeInfo>, String> {
     let themes_dir = get_themes_dir(&app)?;
+    let mut themes: Vec<ThemeInfo> = Vec::new();
+    let mut seen_ids: std::collections::HashSet<String> = std::collections::HashSet::new();
 
-    if !themes_dir.exists() {
-        // フォルダ未作成ならビルトインのみ返す
-        return Ok(builtin_themes());
+    // ユーザーテーマフォルダ（AppData/themes/）をスキャン
+    if themes_dir.exists() {
+        let entries = fs::read_dir(&themes_dir)
+            .map_err(|e| format!("Failed to read themes dir: {}", e))?;
+
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) == Some("json") {
+                match fs::read_to_string(&path) {
+                    Ok(content) => match serde_json::from_str::<ThemeInfo>(&content) {
+                        Ok(theme) => {
+                            seen_ids.insert(theme.id.clone());
+                            themes.push(theme);
+                        }
+                        Err(e) => eprintln!("Invalid theme file {:?}: {}", path, e),
+                    },
+                    Err(e) => eprintln!("Failed to read theme {:?}: {}", path, e),
+                }
+            }
+        }
+    } else {
+        // フォルダ未作成ならビルトインのみ先に追加
+        for theme in builtin_themes() {
+            seen_ids.insert(theme.id.clone());
+            themes.push(theme);
+        }
     }
 
-    let mut themes: Vec<ThemeInfo> = Vec::new();
-
-    let entries = fs::read_dir(&themes_dir)
-        .map_err(|e| format!("Failed to read themes dir: {}", e))?;
-
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if path.extension().and_then(|e| e.to_str()) == Some("json") {
-            match fs::read_to_string(&path) {
-                Ok(content) => match serde_json::from_str::<ThemeInfo>(&content) {
-                    Ok(theme) => themes.push(theme),
-                    Err(e) => eprintln!("Invalid theme file {:?}: {}", path, e),
-                },
-                Err(e) => eprintln!("Failed to read theme {:?}: {}", path, e),
+    // バンドルされたサンプルテーマ（resources/sample-themes/）をスキャン
+    if let Ok(resource_dir) = app.path().resource_dir() {
+        let sample_dir = resource_dir.join("resources").join("sample-themes");
+        if sample_dir.exists() {
+            if let Ok(entries) = fs::read_dir(&sample_dir) {
+                for entry in entries.flatten() {
+                    let path = entry.path();
+                    if path.extension().and_then(|e| e.to_str()) == Some("json") {
+                        match fs::read_to_string(&path) {
+                            Ok(content) => match serde_json::from_str::<ThemeInfo>(&content) {
+                                Ok(theme) => {
+                                    // ユーザーテーマに同じIDがあれば上書きしない
+                                    if !seen_ids.contains(&theme.id) {
+                                        seen_ids.insert(theme.id.clone());
+                                        themes.push(theme);
+                                    }
+                                }
+                                Err(e) => eprintln!("Invalid sample theme {:?}: {}", path, e),
+                            },
+                            Err(e) => eprintln!("Failed to read sample theme {:?}: {}", path, e),
+                        }
+                    }
+                }
             }
         }
     }
