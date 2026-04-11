@@ -10,6 +10,29 @@ import { LAYOUT } from "../constants";
 
 /** セルサイズとグリッド構成からウィンドウサイズを計算 */
 export function calcWindowSize(s: AppSettings) {
+  const viewMode = s.viewMode ?? "grid";
+
+  if (viewMode === "list") {
+    // リストモード: 行数はグリッド総セル数のうち非空セルに依存
+    // 最低でもグリッド行数分の高さを確保
+    const LIST_ROW_HEIGHT = 29; // 28px row + 1px gap
+    const rowCount = s.defaultGridRows * s.defaultGridColumns;
+    const maxVisibleRows = Math.min(rowCount, 20);
+    const width =
+      s.cellSize * s.defaultGridColumns +
+      LAYOUT.GRID_GAP * (s.defaultGridColumns - 1) +
+      LAYOUT.GRID_PADDING +
+      LAYOUT.BORDER_EXTRA;
+    const height =
+      LIST_ROW_HEIGHT * maxVisibleRows +
+      8 + // list padding
+      LAYOUT.TITLEBAR_HEIGHT +
+      LAYOUT.TABBAR_HEIGHT +
+      LAYOUT.STATUSBAR_HEIGHT +
+      LAYOUT.BORDER_EXTRA;
+    return { width, height };
+  }
+
   const width =
     s.cellSize * s.defaultGridColumns +
     LAYOUT.GRID_GAP * (s.defaultGridColumns - 1) +

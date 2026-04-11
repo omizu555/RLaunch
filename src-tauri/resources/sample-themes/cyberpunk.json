@@ -1,0 +1,25 @@
+{
+  "id": "cyberpunk",
+  "label": "Cyberpunk",
+  "author": "sample",
+  "variables": {
+    "--bg-primary": "#0d0221",
+    "--bg-secondary": "#150535",
+    "--bg-button": "#1a0a3e",
+    "--bg-button-hover": "#2b1055",
+    "--bg-button-active": "#3c1a6e",
+    "--bg-button-empty": "rgba(26, 10, 62, 0.4)",
+    "--text-primary": "#0ff0fc",
+    "--text-secondary": "#ff2a6d",
+    "--text-muted": "#7b5ea7",
+    "--border-color": "#541388",
+    "--accent-color": "#f706cf",
+    "--accent-hover": "#0ff0fc",
+    "--shadow-color": "rgba(247, 6, 207, 0.3)",
+    "--danger-color": "#ff2a6d",
+    "--success-color": "#05ffa1",
+    "--warning-color": "#fcee09",
+    "--border-radius": "2px",
+    "--border-radius-sm": "1px"
+  }
+}

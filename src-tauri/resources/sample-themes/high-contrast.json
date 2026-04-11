@@ -1,0 +1,25 @@
+{
+  "id": "high-contrast",
+  "label": "ハイコントラスト",
+  "author": "sample",
+  "variables": {
+    "--bg-primary": "#000000",
+    "--bg-secondary": "#0a0a0a",
+    "--bg-button": "#1a1a1a",
+    "--bg-button-hover": "#333333",
+    "--bg-button-active": "#4d4d4d",
+    "--bg-button-empty": "rgba(255, 255, 255, 0.08)",
+    "--text-primary": "#ffffff",
+    "--text-secondary": "#e0e0e0",
+    "--text-muted": "#b0b0b0",
+    "--border-color": "#ffffff",
+    "--accent-color": "#ffff00",
+    "--accent-hover": "#00ffff",
+    "--shadow-color": "rgba(255, 255, 255, 0.1)",
+    "--danger-color": "#ff6666",
+    "--success-color": "#66ff66",
+    "--warning-color": "#ffcc00",
+    "--border-radius": "4px",
+    "--border-radius-sm": "2px"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "everforest",
+  "label": "Everforest",
+  "author": "sample",
+  "variables": {
+    "--bg-primary": "#2d353b",
+    "--bg-secondary": "#272e33",
+    "--bg-button": "#374145",
+    "--bg-button-hover": "#414b50",
+    "--bg-button-active": "#4f585e",
+    "--bg-button-empty": "rgba(55, 65, 69, 0.3)",
+    "--text-primary": "#d3c6aa",
+    "--text-secondary": "#c5b89a",
+    "--text-muted": "#7a8478",
+    "--border-color": "#4f585e",
+    "--accent-color": "#a7c080",
+    "--accent-hover": "#83c092",
+    "--shadow-color": "rgba(0, 0, 0, 0.35)",
+    "--danger-color": "#e67e80",
+    "--success-color": "#a7c080",
+    "--warning-color": "#dbbc7f",
+    "--border-radius": "6px",
+    "--border-radius-sm": "3px"
+  }
+}

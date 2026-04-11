@@ -1,0 +1,27 @@
+{
+  "id": "wireframe",
+  "label": "Wireframe (スケルトン)",
+  "author": "sample",
+  "variables": {
+    "--bg-primary": "rgba(0, 0, 0, 0.08)",
+    "--bg-secondary": "rgba(0, 0, 0, 0.05)",
+    "--bg-button": "rgba(255, 255, 255, 0.03)",
+    "--bg-button-hover": "rgba(255, 255, 255, 0.12)",
+    "--bg-button-active": "rgba(255, 255, 255, 0.18)",
+    "--bg-button-empty": "rgba(255, 255, 255, 0.02)",
+    "--text-primary": "rgba(255, 255, 255, 0.9)",
+    "--text-secondary": "rgba(255, 255, 255, 0.6)",
+    "--text-muted": "rgba(255, 255, 255, 0.3)",
+    "--border-color": "rgba(255, 255, 255, 0.25)",
+    "--accent-color": "rgba(137, 180, 250, 0.8)",
+    "--accent-hover": "rgba(116, 199, 236, 0.8)",
+    "--shadow-color": "rgba(0, 0, 0, 0.0)",
+    "--danger-color": "#f38ba8",
+    "--success-color": "#a6e3a1",
+    "--warning-color": "#fab387",
+    "--border-radius": "8px",
+    "--border-radius-sm": "4px",
+    "--window-opacity": "0.9",
+    "--window-effect": "acrylic"
+  }
+}

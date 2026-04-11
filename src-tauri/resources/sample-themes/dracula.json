@@ -1,0 +1,25 @@
+{
+  "id": "dracula",
+  "label": "Dracula",
+  "author": "sample",
+  "variables": {
+    "--bg-primary": "#282a36",
+    "--bg-secondary": "#21222c",
+    "--bg-button": "#44475a",
+    "--bg-button-hover": "#545772",
+    "--bg-button-active": "#626591",
+    "--bg-button-empty": "rgba(68, 71, 90, 0.3)",
+    "--text-primary": "#f8f8f2",
+    "--text-secondary": "#d4d4e8",
+    "--text-muted": "#6272a4",
+    "--border-color": "#6272a4",
+    "--accent-color": "#bd93f9",
+    "--accent-hover": "#ff79c6",
+    "--shadow-color": "rgba(0, 0, 0, 0.4)",
+    "--danger-color": "#ff5555",
+    "--success-color": "#50fa7b",
+    "--warning-color": "#f1fa8c",
+    "--border-radius": "8px",
+    "--border-radius-sm": "4px"
+  }
+}

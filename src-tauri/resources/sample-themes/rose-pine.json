@@ -1,0 +1,25 @@
+{
+  "id": "rose-pine",
+  "label": "Rosé Pine",
+  "author": "sample",
+  "variables": {
+    "--bg-primary": "#191724",
+    "--bg-secondary": "#1f1d2e",
+    "--bg-button": "#26233a",
+    "--bg-button-hover": "#2a2740",
+    "--bg-button-active": "#393552",
+    "--bg-button-empty": "rgba(38, 35, 58, 0.35)",
+    "--text-primary": "#e0def4",
+    "--text-secondary": "#c4a7e7",
+    "--text-muted": "#6e6a86",
+    "--border-color": "#393552",
+    "--accent-color": "#ebbcba",
+    "--accent-hover": "#f6c177",
+    "--shadow-color": "rgba(0, 0, 0, 0.5)",
+    "--danger-color": "#eb6f92",
+    "--success-color": "#9ccfd8",
+    "--warning-color": "#f6c177",
+    "--border-radius": "10px",
+    "--border-radius-sm": "5px"
+  }
+}

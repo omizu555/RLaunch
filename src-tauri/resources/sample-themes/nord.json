@@ -1,0 +1,25 @@
+{
+  "id": "nord",
+  "label": "Nord",
+  "author": "sample",
+  "variables": {
+    "--bg-primary": "#2e3440",
+    "--bg-secondary": "#3b4252",
+    "--bg-button": "#434c5e",
+    "--bg-button-hover": "#4c566a",
+    "--bg-button-active": "#5e6779",
+    "--bg-button-empty": "rgba(67, 76, 94, 0.3)",
+    "--text-primary": "#eceff4",
+    "--text-secondary": "#d8dee9",
+    "--text-muted": "#7b88a1",
+    "--border-color": "#4c566a",
+    "--accent-color": "#88c0d0",
+    "--accent-hover": "#8fbcbb",
+    "--shadow-color": "rgba(0, 0, 0, 0.35)",
+    "--danger-color": "#bf616a",
+    "--success-color": "#a3be8c",
+    "--warning-color": "#ebcb8b",
+    "--border-radius": "6px",
+    "--border-radius-sm": "3px"
+  }
+}

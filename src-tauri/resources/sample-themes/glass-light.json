@@ -1,0 +1,27 @@
+{
+  "id": "glass-light",
+  "label": "Glass Light (透過)",
+  "author": "sample",
+  "variables": {
+    "--bg-primary": "rgba(239, 241, 245, 0.6)",
+    "--bg-secondary": "rgba(230, 233, 239, 0.7)",
+    "--bg-button": "rgba(204, 208, 218, 0.5)",
+    "--bg-button-hover": "rgba(188, 192, 204, 0.6)",
+    "--bg-button-active": "rgba(172, 176, 190, 0.7)",
+    "--bg-button-empty": "rgba(204, 208, 218, 0.15)",
+    "--text-primary": "#4c4f69",
+    "--text-secondary": "#5c5f77",
+    "--text-muted": "#9ca0b0",
+    "--border-color": "rgba(172, 176, 190, 0.5)",
+    "--accent-color": "#1e66f5",
+    "--accent-hover": "#2a6ef7",
+    "--shadow-color": "rgba(0, 0, 0, 0.1)",
+    "--danger-color": "#d20f39",
+    "--success-color": "#40a02b",
+    "--warning-color": "#df8e1d",
+    "--border-radius": "12px",
+    "--border-radius-sm": "6px",
+    "--window-opacity": "0.85",
+    "--window-effect": "mica"
+  }
+}

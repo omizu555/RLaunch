@@ -1,0 +1,25 @@
+{
+  "id": "sunset",
+  "label": "Sunset Glow",
+  "author": "sample",
+  "variables": {
+    "--bg-primary": "#2b1b2e",
+    "--bg-secondary": "#231526",
+    "--bg-button": "#3d2442",
+    "--bg-button-hover": "#4e3054",
+    "--bg-button-active": "#5f3d66",
+    "--bg-button-empty": "rgba(61, 36, 66, 0.3)",
+    "--text-primary": "#ffecd2",
+    "--text-secondary": "#f0c4a8",
+    "--text-muted": "#9a7b8c",
+    "--border-color": "#5f3d66",
+    "--accent-color": "#ff6b6b",
+    "--accent-hover": "#ffa06b",
+    "--shadow-color": "rgba(0, 0, 0, 0.4)",
+    "--danger-color": "#ff4757",
+    "--success-color": "#7bed9f",
+    "--warning-color": "#ffa502",
+    "--border-radius": "10px",
+    "--border-radius-sm": "5px"
+  }
+}

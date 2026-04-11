@@ -22,6 +22,8 @@ export interface AppSettings {
   labelFontSize?: number;
   /** P-50: ウィンドウ不透明度 (0-100, 100=完全不透明) */
   windowOpacity?: number;
+  /** 表示モード: grid=アイコングリッド, list=テキストリスト */
+  viewMode?: "grid" | "list";
 }
 
 /** デフォルト設定 */
@@ -40,4 +42,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   appTitle: "RLaunch",
   labelFontSize: 10,
   windowOpacity: 100,
+  viewMode: "grid",
 };

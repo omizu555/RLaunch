@@ -47,6 +47,7 @@ pub fn run() {
             commands::theme_manager::init_themes,
             commands::theme_manager::list_themes,
             commands::theme_manager::get_themes_dir_path,
+            commands::theme_manager::get_sample_themes_dir_path,
             commands::widget_manager::init_widgets,
             commands::widget_manager::list_widgets,
             commands::widget_manager::get_widget_script,

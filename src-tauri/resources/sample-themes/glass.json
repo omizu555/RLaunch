@@ -1,0 +1,27 @@
+{
+  "id": "glass",
+  "label": "Glass Dark (透過)",
+  "author": "sample",
+  "variables": {
+    "--bg-primary": "rgba(30, 30, 46, 0.6)",
+    "--bg-secondary": "rgba(24, 24, 37, 0.7)",
+    "--bg-button": "rgba(49, 50, 68, 0.5)",
+    "--bg-button-hover": "rgba(69, 71, 90, 0.6)",
+    "--bg-button-active": "rgba(88, 91, 112, 0.7)",
+    "--bg-button-empty": "rgba(69, 71, 90, 0.15)",
+    "--text-primary": "#cdd6f4",
+    "--text-secondary": "#a6adc8",
+    "--text-muted": "#6c7086",
+    "--border-color": "rgba(69, 71, 90, 0.5)",
+    "--accent-color": "#89b4fa",
+    "--accent-hover": "#74c7ec",
+    "--shadow-color": "rgba(0, 0, 0, 0.2)",
+    "--danger-color": "#f38ba8",
+    "--success-color": "#a6e3a1",
+    "--warning-color": "#fab387",
+    "--border-radius": "12px",
+    "--border-radius-sm": "6px",
+    "--window-opacity": "0.85",
+    "--window-effect": "acrylic"
+  }
+}

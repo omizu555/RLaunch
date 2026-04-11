@@ -23,6 +23,11 @@ export async function getThemesDirPath(): Promise<string> {
   return await invoke<string>("get_themes_dir_path");
 }
 
+/** サンプルテーマフォルダのパスを取得 */
+export async function getSampleThemesDirPath(): Promise<string> {
+  return await invoke<string>("get_sample_themes_dir_path");
+}
+
 /**
  * テーマの CSS 変数を :root に動的適用
  * 前回適用したカスタム変数をクリアしてから新しいものを設定する

@@ -11,6 +11,7 @@ import { NOTIFICATION_DURATION } from "./constants";
 import { CustomTitleBar } from "./components/CustomTitleBar";
 import { TabBar } from "./components/TabBar";
 import { LauncherGrid } from "./components/LauncherGrid";
+import { LauncherList } from "./components/LauncherList";
 import { useWidgetSelectWindow } from "./hooks/useWidgetSelectWindow";
 import { SearchBar } from "./components/SearchBar";
 import { ItemEditDialog } from "./components/ItemEditDialog";
@@ -578,7 +579,20 @@ function App() {
         onResizeTab={handleResizeTab}
       />
 
-      {activeTab && (
+      {activeTab && (settings.viewMode ?? "grid") === "list" ? (
+        <LauncherList
+          tab={activeTab}
+          onCellClick={handleCellClick}
+          onCellClear={handleCellClear}
+          onCellSwap={handleCellSwap}
+          onLaunch={launcher.launch}
+          onLaunchAdmin={launcher.launchAdmin}
+          onOpenLocation={launcher.openLocation}
+          onEditItem={handleEditItem}
+          onEditGroup={handleEditGroup}
+          invalidPaths={invalidPaths}
+        />
+      ) : activeTab ? (
         <LauncherGrid
           tab={activeTab} showLabels={settings.showLabels}
           onCellClick={handleCellClick}
@@ -598,7 +612,7 @@ function App() {
           onDragStateChange={setIsDraggingItem}
           invalidPaths={invalidPaths}
         />
-      )}
+      ) : null}
 
       <div className="statusbar">
         <span>{activeTab?.label} — {itemCount} アイテム / {totalSlots} スロット</span>

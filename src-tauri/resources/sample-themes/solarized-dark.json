@@ -1,0 +1,25 @@
+{
+  "id": "solarized-dark",
+  "label": "Solarized Dark",
+  "author": "sample",
+  "variables": {
+    "--bg-primary": "#002b36",
+    "--bg-secondary": "#073642",
+    "--bg-button": "#0a4050",
+    "--bg-button-hover": "#1a5060",
+    "--bg-button-active": "#2a6070",
+    "--bg-button-empty": "rgba(7, 54, 66, 0.4)",
+    "--text-primary": "#fdf6e3",
+    "--text-secondary": "#eee8d5",
+    "--text-muted": "#657b83",
+    "--border-color": "#586e75",
+    "--accent-color": "#268bd2",
+    "--accent-hover": "#2aa198",
+    "--shadow-color": "rgba(0, 0, 0, 0.5)",
+    "--danger-color": "#dc322f",
+    "--success-color": "#859900",
+    "--warning-color": "#b58900",
+    "--border-radius": "6px",
+    "--border-radius-sm": "3px"
+  }
+}

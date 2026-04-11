@@ -8,7 +8,7 @@ import { listen, emit } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import type { AppSettings } from "../types";
 import { DEFAULT_SETTINGS } from "../types";
-import { listThemes, getThemesDirPath, applyThemeById } from "../utils/themeLoader";
+import { listThemes, getThemesDirPath, getSampleThemesDirPath, applyThemeById } from "../utils/themeLoader";
 import { applyWindowEffect } from "../utils/applyWindowEffect";
 import type { ThemeInfo } from "../utils/themeLoader";
 
@@ -24,6 +24,7 @@ export function SettingsWindow() {
   const [storePath, setStorePath] = useState<string>("");
   const [themes, setThemes] = useState<ThemeInfo[]>([]);
   const [themesDir, setThemesDir] = useState<string>("");
+  const [sampleThemesDir, setSampleThemesDir] = useState<string>("");
 
   // メインから設定データを受信
   useEffect(() => {
@@ -64,6 +65,7 @@ export function SettingsWindow() {
     // テーマ一覧を動的に取得
     listThemes().then(setThemes).catch((e) => console.error("Failed to load themes:", e));
     getThemesDirPath().then(setThemesDir).catch((e) => console.error("Failed to get themes dir:", e));
+    getSampleThemesDirPath().then(setSampleThemesDir).catch((e) => console.error("Failed to get sample themes dir:", e));
 
     return () => {
       cancelled = true;
@@ -231,6 +233,15 @@ export function SettingsWindow() {
                 📁
               </button>
             )}
+            {sampleThemesDir && (
+              <button
+                className="settings-btn secondary small"
+                title="サンプルテーマフォルダを開く（ここからテーマフォルダへコピー）"
+                onClick={() => invoke("open_file_location", { path: sampleThemesDir + "\\" })}
+              >
+                📦
+              </button>
+            )}
           </div>
         </div>
 
@@ -354,6 +365,19 @@ export function SettingsWindow() {
             />
             <span>ラベルを表示</span>
           </label>
+        </div>
+
+        {/* 表示モード選択 */}
+        <div className="setting-group">
+          <label className="setting-label">表示モード</label>
+          <select
+            className="setting-select"
+            value={draft.viewMode ?? "grid"}
+            onChange={(e) => update("viewMode", e.target.value as "grid" | "list")}
+          >
+            <option value="grid">グリッド (アイコン表示)</option>
+            <option value="list">リスト (テキスト表示)</option>
+          </select>
         </div>
 
         {/* P-29: ラベルフォントサイズ */}

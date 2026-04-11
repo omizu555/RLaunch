@@ -1,0 +1,25 @@
+{
+  "id": "monokai",
+  "label": "Monokai",
+  "author": "sample",
+  "variables": {
+    "--bg-primary": "#272822",
+    "--bg-secondary": "#1e1f1c",
+    "--bg-button": "#3e3d32",
+    "--bg-button-hover": "#4e4d42",
+    "--bg-button-active": "#5e5d52",
+    "--bg-button-empty": "rgba(62, 61, 50, 0.3)",
+    "--text-primary": "#f8f8f2",
+    "--text-secondary": "#cfcfc2",
+    "--text-muted": "#75715e",
+    "--border-color": "#49483e",
+    "--accent-color": "#66d9ef",
+    "--accent-hover": "#a6e22e",
+    "--shadow-color": "rgba(0, 0, 0, 0.45)",
+    "--danger-color": "#f92672",
+    "--success-color": "#a6e22e",
+    "--warning-color": "#e6db74",
+    "--border-radius": "6px",
+    "--border-radius-sm": "3px"
+  }
+}
