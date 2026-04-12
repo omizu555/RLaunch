@@ -290,22 +290,49 @@ export async function resizeTabGrid(
   return tabs;
 }
 
-/** タブ個別の表示設定を更新 */
-export async function setTabDisplaySettings(
+/** タブ設定を一括更新（名前、グリッドサイズ、カラー、表示設定） */
+export async function updateTabSettings(
   tabId: string,
-  displaySettings: { viewMode?: "grid" | "list"; listColumns?: number }
+  settings: {
+    label?: string;
+    gridColumns?: number;
+    gridRows?: number;
+    color?: string;
+    viewMode?: "grid" | "list";
+    listColumns?: number;
+  }
 ): Promise<Tab[]> {
   const tabs = await getTabs();
   const tab = tabs.find((t) => t.id === tabId);
-  if (tab) {
-    if (displaySettings.viewMode !== undefined) {
-      tab.viewMode = displaySettings.viewMode || undefined;
-    }
-    if (displaySettings.listColumns !== undefined) {
-      tab.listColumns = displaySettings.listColumns || undefined;
-    }
-    await saveTabs(tabs);
+  if (!tab) return tabs;
+
+  if (settings.label !== undefined) {
+    tab.label = settings.label;
   }
+
+  // グリッドサイズ変更時はアイテム再配置
+  const newCols = settings.gridColumns;
+  const newRows = settings.gridRows;
+  if (newCols !== undefined && newRows !== undefined &&
+      (newCols !== tab.gridColumns || newRows !== tab.gridRows)) {
+    tab.items = remapGridItems(tab.items, tab.gridColumns, tab.gridRows, newCols, newRows);
+    tab.gridColumns = newCols;
+    tab.gridRows = newRows;
+  }
+
+  if (settings.color !== undefined) {
+    tab.color = settings.color || undefined;
+  }
+
+  // undefined = 全体設定に従う
+  if ("viewMode" in settings) {
+    tab.viewMode = settings.viewMode || undefined;
+  }
+  if ("listColumns" in settings) {
+    tab.listColumns = settings.listColumns || undefined;
+  }
+
+  await saveTabs(tabs);
   return tabs;
 }
 

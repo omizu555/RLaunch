@@ -16,10 +16,8 @@ import {
   saveSettings,
   resizeAllTabsGrid,
   reorderTabs,
-  setTabColor,
   duplicateTab,
-  resizeTabGrid,
-  setTabDisplaySettings,
+  updateTabSettings,
 } from "../stores/launcherStore";
 import { DEFAULT_SETTINGS } from "../types";
 import { createLauncherItemFromPath } from "../utils/fileRegistration";
@@ -108,15 +106,6 @@ export function useTabManager(onNotify: (msg: string) => void) {
     []
   );
 
-  // ── P-04: タブカラー変更 ──
-  const handleTabColorChange = useCallback(
-    async (tabId: string, color: string) => {
-      const newTabs = await setTabColor(tabId, color);
-      setTabs(newTabs);
-    },
-    []
-  );
-
   // ── P-06: タブ複製 ──
   const handleDuplicateTab = useCallback(
     async (tabId: string) => {
@@ -128,22 +117,19 @@ export function useTabManager(onNotify: (msg: string) => void) {
     [onNotify]
   );
 
-  // ── P-25: タブごとのグリッドサイズ変更 ──
-  const handleResizeTab = useCallback(
-    async (tabId: string, cols: number, rows: number) => {
-      const newTabs = await resizeTabGrid(tabId, cols, rows);
+  // ── タブ設定の一括更新 ──
+  const handleTabSettings = useCallback(
+    async (tabId: string, settings: {
+      label?: string;
+      gridColumns?: number;
+      gridRows?: number;
+      color?: string;
+      viewMode?: "grid" | "list";
+      listColumns?: number;
+    }) => {
+      const newTabs = await updateTabSettings(tabId, settings);
       setTabs(newTabs);
-      onNotify(`グリッドサイズを ${cols}×${rows} に変更しました`);
-    },
-    [onNotify]
-  );
-
-  // ── タブ個別の表示設定変更 ──
-  const handleTabDisplaySettings = useCallback(
-    async (tabId: string, displaySettings: { viewMode?: "grid" | "list"; listColumns?: number }) => {
-      const newTabs = await setTabDisplaySettings(tabId, displaySettings);
-      setTabs(newTabs);
-      onNotify("タブの表示設定を変更しました");
+      onNotify("タブ設定を更新しました");
     },
     [onNotify]
   );
@@ -271,10 +257,8 @@ export function useTabManager(onNotify: (msg: string) => void) {
     handleRenameTab,
     handleRemoveTab,
     handleReorderTabs,
-    handleTabColorChange,
     handleDuplicateTab,
-    handleResizeTab,
-    handleTabDisplaySettings,
+    handleTabSettings,
     // cell ops
     handleCellClear,
     handleCellUpdate,

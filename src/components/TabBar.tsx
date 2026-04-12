@@ -6,12 +6,6 @@ import "./TabBar.css";
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { Tab } from "../types";
 
-/** タブカラーマーカーのプリセット */
-const TAB_COLORS = [
-  "", "#ef4444", "#f97316", "#eab308", "#22c55e",
-  "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899",
-];
-
 interface TabBarProps {
   tabs: Tab[];
   activeTabId: string;
@@ -23,13 +17,9 @@ interface TabBarProps {
   onReorderTabs?: (fromIndex: number, toIndex: number) => void;
   /** P-06: タブ複製 */
   onDuplicateTab?: (tabId: string) => void;
-  /** P-04: タブカラー変更 */
-  onTabColorChange?: (tabId: string, color: string) => void;
   /** P-12: ドラッグ中のタブホバー通知 */
   isDraggingItem?: boolean;
-  /** P-25: タブごとのグリッドサイズ変更 */
-  onResizeTab?: (tabId: string, cols: number, rows: number) => void;
-  /** タブ個別の表示設定 */
+  /** タブ設定ダイアログを開く */
   onTabSettings?: (tabId: string) => void;
 }
 
@@ -48,14 +38,11 @@ export function TabBar({
   onRemoveTab,
   onReorderTabs,
   onDuplicateTab,
-  onTabColorChange,
   isDraggingItem,
-  onResizeTab,
   onTabSettings,
 }: TabBarProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [menu, setMenu] = useState<TabMenu | null>(null);
-  const [showColorPicker, setShowColorPicker] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // ── P-03: タブ D&D 並び替え ──
@@ -145,13 +132,12 @@ export function TabBar({
   const handleContextMenu = (e: React.MouseEvent, tabId: string) => {
     e.preventDefault();
     setMenu({ tabId, x: e.clientX, y: e.clientY });
-    setShowColorPicker(false);
   };
 
   // メニュー外クリックで閉じる
   useEffect(() => {
     if (!menu) return;
-    const handler = () => { setMenu(null); setShowColorPicker(false); };
+    const handler = () => { setMenu(null); };
     window.addEventListener("click", handler);
     return () => window.removeEventListener("click", handler);
   }, [menu]);
@@ -220,16 +206,7 @@ export function TabBar({
             className="tab-context-menu"
             style={{ left: Math.min(menu.x, window.innerWidth - 180), top: menu.y }}
           >
-            <div
-              className="tab-context-item"
-              onClick={() => {
-                handleDoubleClick(menu.tabId);
-                setMenu(null);
-              }}
-            >
-              ✏ タブ名を変更
-            </div>
-            {/* P-06: タブ複製 */}
+            {/* タブ複製 */}
             {onDuplicateTab && (
               <div
                 className="tab-context-item"
@@ -241,31 +218,7 @@ export function TabBar({
                 📋 タブを複製
               </div>
             )}
-            {/* P-25: タブごとのグリッドサイズ変更 */}
-            {onResizeTab && (
-              <div
-                className="tab-context-item"
-                onClick={() => {
-                  const tab = tabs.find((t) => t.id === menu.tabId);
-                  if (!tab) return;
-                  const input = window.prompt(
-                    `グリッドサイズを変更（列×行）\n現在: ${tab.gridColumns}×${tab.gridRows}`,
-                    `${tab.gridColumns}×${tab.gridRows}`
-                  );
-                  if (!input) { setMenu(null); return; }
-                  const match = input.match(/^(\d+)\s*[×x,\s]\s*(\d+)$/i);
-                  if (match) {
-                    const cols = Math.max(1, Math.min(20, parseInt(match[1])));
-                    const rows = Math.max(1, Math.min(10, parseInt(match[2])));
-                    onResizeTab(menu.tabId, cols, rows);
-                  }
-                  setMenu(null);
-                }}
-              >
-                📐 グリッドサイズを変更
-              </div>
-            )}
-            {/* タブ個別表示設定 */}
+            {/* タブ設定 */}
             {onTabSettings && (
               <div
                 className="tab-context-item"
@@ -274,37 +227,10 @@ export function TabBar({
                   setMenu(null);
                 }}
               >
-                ⚙ タブ表示設定
+                ⚙ タブ設定
               </div>
             )}
-            {/* P-04: カラー変更 */}
-            {onTabColorChange && (
-              <div
-                className="tab-context-item"
-                onClick={(e) => { e.stopPropagation(); setShowColorPicker(!showColorPicker); }}
-              >
-                🎨 カラーを変更
-                {showColorPicker && (
-                  <div className="tab-color-picker" onClick={(e) => e.stopPropagation()}>
-                    {TAB_COLORS.map((c) => (
-                      <button
-                        key={c || "none"}
-                        className={`tab-color-option ${c === "" ? "no-color" : ""}`}
-                        style={c ? { background: c } : undefined}
-                        title={c || "なし"}
-                        onClick={() => {
-                          onTabColorChange(menu.tabId, c);
-                          setMenu(null);
-                          setShowColorPicker(false);
-                        }}
-                      >
-                        {c === "" ? "✕" : ""}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+            {/* タブ削除 */}
             {tabs.length > 1 && (
               <>
                 <div className="tab-context-separator" />

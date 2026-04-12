@@ -63,8 +63,8 @@ function App() {
     tabs, activeTabId, activeTab, settings, loading,
     setActiveTabId, setTabs,
     handleAddTab, handleRenameTab, handleRemoveTab,
-    handleReorderTabs, handleTabColorChange, handleDuplicateTab, handleResizeTab,
-    handleTabDisplaySettings,
+    handleReorderTabs, handleDuplicateTab,
+    handleTabSettings,
     handleCellClear, handleCellSwap, handleNativeDrop,
     handleSettingsChange, loadData,
   } = tabManager;
@@ -583,9 +583,7 @@ function App() {
         onRenameTab={handleRenameTab} onRemoveTab={handleRemoveTab}
         onReorderTabs={handleReorderTabs}
         onDuplicateTab={handleDuplicateTab}
-        onTabColorChange={handleTabColorChange}
         isDraggingItem={isDraggingItem}
-        onResizeTab={handleResizeTab}
         onTabSettings={setTabSettingsTarget}
       />
 
@@ -645,7 +643,7 @@ function App() {
             tab={targetTab}
             globalViewMode={settings.viewMode ?? "grid"}
             globalListColumns={settings.listColumns ?? 1}
-            onSave={handleTabDisplaySettings}
+            onSave={handleTabSettings}
             onClose={() => setTabSettingsTarget(null)}
           />
         ) : null;

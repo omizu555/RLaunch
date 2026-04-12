@@ -1,5 +1,5 @@
 /* ============================================================
-   TabSettingsDialog.css - タブ個別設定ダイアログ
+   TabSettingsDialog.css - タブ設定ダイアログ
    ============================================================ */
 
 .tab-settings-overlay {
@@ -19,8 +19,10 @@
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius, 6px);
-  width: 320px;
+  width: 340px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .tab-settings-header {
@@ -56,7 +58,7 @@
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .tab-setting-group {
@@ -76,6 +78,93 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.tab-setting-input {
+  width: 100%;
+  padding: 5px 8px;
+  font-size: 12px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm, 3px);
+  outline: none;
+}
+.tab-setting-input:focus {
+  border-color: var(--accent-color);
+}
+
+.tab-setting-grid-size {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tab-setting-input-small {
+  width: 56px;
+  padding: 5px 8px;
+  font-size: 12px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm, 3px);
+  outline: none;
+  text-align: center;
+}
+.tab-setting-input-small:focus {
+  border-color: var(--accent-color);
+}
+
+.tab-setting-separator {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.tab-setting-hint {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+.tab-setting-colors {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tab-setting-color-option {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: border-color 0.1s;
+}
+.tab-setting-color-option:hover {
+  border-color: var(--text-muted);
+}
+.tab-setting-color-option.selected {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 1px var(--accent-color);
+}
+.tab-setting-color-option.no-color {
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border-color);
+}
+.tab-setting-color-option.no-color.selected {
+  border-color: var(--accent-color);
+  border-style: solid;
+}
+
+.tab-setting-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 2px 0;
 }
 
 .tab-setting-checkbox {
