@@ -42,7 +42,7 @@ export function useGroupEditWindow({ onSave, onClosed }: UseGroupEditWindowOptio
       url: "src/group-edit.html",
       title: "📁 グループ編集",
       width: 380,
-      height: 360,
+      height: 480,
       resizable: false,
       decorations: false,
     }),
@@ -56,12 +56,14 @@ export function useGroupEditWindow({ onSave, onClosed }: UseGroupEditWindowOptio
 
   /** 新規作成モードで開く */
   const openCreateGroup = useCallback(
-    async (defaultColumns: number, defaultRows: number) => {
+    async (defaultColumns: number, defaultRows: number, parentViewMode?: "grid" | "list", parentListColumns?: number) => {
       pendingInit.current = {
         mode: "create",
         label: "新しいグループ",
         columns: defaultColumns,
         rows: defaultRows,
+        parentViewMode,
+        parentListColumns,
       };
       await openWindow();
     },
@@ -70,7 +72,7 @@ export function useGroupEditWindow({ onSave, onClosed }: UseGroupEditWindowOptio
 
   /** 名前変更（編集）モードで開く */
   const openRenameGroup = useCallback(
-    async (label: string, columns: number, rows: number, icon?: string, iconColor?: string, iconBase64?: string, libraryIcon?: string) => {
+    async (label: string, columns: number, rows: number, icon?: string, iconColor?: string, iconBase64?: string, libraryIcon?: string, viewMode?: "grid" | "list", listColumns?: number, parentViewMode?: "grid" | "list", parentListColumns?: number) => {
       pendingInit.current = {
         mode: "rename",
         label,
@@ -80,6 +82,10 @@ export function useGroupEditWindow({ onSave, onClosed }: UseGroupEditWindowOptio
         iconColor,
         iconBase64,
         libraryIcon,
+        viewMode,
+        listColumns,
+        parentViewMode,
+        parentListColumns,
       };
       await openWindow();
     },

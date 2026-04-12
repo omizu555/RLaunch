@@ -194,7 +194,7 @@ function App() {
 
   // ── グループ編集ウィンドウ ──
   const { openCreateGroup, openRenameGroup } = useGroupEditWindow({
-    onSave: ({ label, columns, rows, icon, iconColor, iconBase64, libraryIcon }) => {
+    onSave: ({ label, columns, rows, icon, iconColor, iconBase64, libraryIcon, viewMode, listColumns }) => {
       const pending = groupEditRef.current;
       if (!pending) return;
       if (pending.mode === "create") {
@@ -209,6 +209,8 @@ function App() {
           items: new Array(columns * rows).fill(null),
           gridColumns: columns,
           gridRows: rows,
+          viewMode,
+          listColumns,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
@@ -232,6 +234,8 @@ function App() {
           libraryIcon,
           gridColumns: columns,
           gridRows: rows,
+          viewMode,
+          listColumns,
           items: newItems,
           updatedAt: new Date().toISOString(),
         };
@@ -289,7 +293,9 @@ function App() {
       // グループクリック → 独立ウィンドウでポップアップ表示
       if (cell && cell.type === "group") {
         groupPopupRef.current = { index };
-        openGroupPopup(cell as GroupItem);
+        const parentViewMode = activeTab?.viewMode ?? settings.viewMode ?? "grid";
+        const parentListColumns = activeTab?.listColumns ?? settings.listColumns ?? 1;
+        openGroupPopup(cell as GroupItem, { viewMode: parentViewMode, listColumns: parentListColumns });
         return;
       }
       launcher.launchFromCell(index, cell);
@@ -321,18 +327,22 @@ function App() {
   const handleCreateGroup = useCallback(
     (index: number) => {
       groupEditRef.current = { mode: "create", index };
-      openCreateGroup(4, 2); // デフォルト: 4列×2行
+      const parentVM = activeTab?.viewMode ?? settings.viewMode ?? "grid";
+      const parentLC = activeTab?.listColumns ?? settings.listColumns ?? 1;
+      openCreateGroup(4, 2, parentVM, parentLC);
     },
-    [openCreateGroup],
+    [openCreateGroup, activeTab, settings],
   );
 
   /** サブグループ名を変更 → 独立ウィンドウを開く */
   const handleEditGroup = useCallback(
     (index: number, group: GroupItem) => {
       groupEditRef.current = { mode: "rename", index, group };
-      openRenameGroup(group.label, group.gridColumns, group.gridRows, group.icon, group.iconColor, group.iconBase64, group.libraryIcon);
+      const parentVM = activeTab?.viewMode ?? settings.viewMode ?? "grid";
+      const parentLC = activeTab?.listColumns ?? settings.listColumns ?? 1;
+      openRenameGroup(group.label, group.gridColumns, group.gridRows, group.icon, group.iconColor, group.iconBase64, group.libraryIcon, group.viewMode, group.listColumns, parentVM, parentLC);
     },
-    [openRenameGroup],
+    [openRenameGroup, activeTab, settings],
   );
 
 

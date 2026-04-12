@@ -33,6 +33,10 @@ import { LauncherButton } from "./LauncherButton";
 
 export interface GroupPopupInitPayload {
   group: GroupItem;
+  /** 親（タブ/全体）の表示モード — グループが未設定の場合に使う */
+  parentViewMode?: "grid" | "list";
+  /** 親（タブ/全体）のリスト列数 — グループが未設定の場合に使う */
+  parentListColumns?: number;
 }
 
 export interface GroupPopupUpdatePayload {
@@ -50,6 +54,8 @@ export function GroupPopupWindow() {
   const [group, setGroup] = useState<GroupItem | null>(null);
   const [context, setContext] = useState<ContextState | null>(null);
   const groupRef = useRef<GroupItem | null>(null);
+  const [parentViewMode, setParentViewMode] = useState<"grid" | "list">("grid");
+  const [parentListColumns, setParentListColumns] = useState(1);
 
   // P-33: ポインタD&D用ステート
   const pointerDrag = useRef<{
@@ -166,10 +172,11 @@ export function GroupPopupWindow() {
   useEffect(() => {
     const unlistenInit = listen<GroupPopupInitPayload>("group-popup-init", (event) => {
       setGroup(event.payload.group);
+      setParentViewMode(event.payload.parentViewMode ?? "grid");
+      setParentListColumns(event.payload.parentListColumns ?? 1);
       setContext(null);
       const label = event.payload.group.label;
       getCurrentWebviewWindow().setTitle(`📂 ${label}`).catch((e) => console.warn("Failed to set title:", e));
-      // reusable ウィンドウなのでテーマ変更に追従
       refreshTheme();
     });
 
@@ -295,6 +302,9 @@ export function GroupPopupWindow() {
   }
 
   const cells = buildCellArray(group.items, group.gridColumns, group.gridRows) as GridCell[];
+  const effectiveViewMode = group.viewMode ?? parentViewMode;
+  const effectiveListColumns = group.listColumns ?? parentListColumns;
+  const isCompact = effectiveViewMode === "list";
 
   return (
     <div className="group-popup-window">
@@ -304,10 +314,12 @@ export function GroupPopupWindow() {
         <button onClick={closeWindow} title="閉じる (Esc)">✕</button>
       </div>
 
-      {/* ── グリッド ── */}
+      {/* ── グリッド / コンパクト表示 ── */}
       <div
-        className="group-popup-grid"
-        style={{
+        className={`group-popup-grid ${isCompact ? "group-popup-compact" : ""}`}
+        style={isCompact ? {
+          gridTemplateColumns: `repeat(${effectiveListColumns}, 1fr)`,
+        } : {
           gridTemplateColumns: `repeat(${group.gridColumns}, var(--cell-size, 64px))`,
           gridTemplateRows: `repeat(${group.gridRows}, var(--cell-size, 64px))`,
         }}
@@ -320,6 +332,7 @@ export function GroupPopupWindow() {
               cell={cell}
               index={i}
               showLabels
+              compact={isCompact}
               isDragOver={hoverIndex === i || dragTarget === i}
               isDragSource={dragSource === i}
               onContextMenu={handleContextMenu}

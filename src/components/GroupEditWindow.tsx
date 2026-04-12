@@ -28,6 +28,12 @@ export interface GroupEditInitPayload {
   iconColor?: string;
   iconBase64?: string;
   libraryIcon?: string;
+  viewMode?: "grid" | "list";
+  listColumns?: number;
+  /** 親（タブ/全体）から継承する表示モード */
+  parentViewMode?: "grid" | "list";
+  /** 親（タブ/全体）から継承するリスト列数 */
+  parentListColumns?: number;
 }
 
 export interface GroupEditResultPayload {
@@ -38,6 +44,8 @@ export interface GroupEditResultPayload {
   iconColor?: string;
   iconBase64?: string;
   libraryIcon?: string;
+  viewMode?: "grid" | "list";
+  listColumns?: number;
 }
 
 const GROUP_COLORS = ["", "#f38ba8", "#fab387", "#f9e2af", "#a6e3a1", "#89b4fa", "#cba6f7", "#f5c2e7", "#94e2d5"];
@@ -54,6 +62,12 @@ export function GroupEditWindow() {
   const [libraryIcon, setLibraryIcon] = useState<string | undefined>(undefined);
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [iconLibrary, setIconLibrary] = useState<IconInfo[]>([]);
+  const [inheritViewMode, setInheritViewMode] = useState(true);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [inheritListColumns, setInheritListColumns] = useState(true);
+  const [listColumns, setListColumns] = useState(1);
+  const [parentViewMode, setParentViewMode] = useState<"grid" | "list">("grid");
+  const [parentListColumns, setParentListColumns] = useState(1);
   const [ready, setReady] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -69,6 +83,12 @@ export function GroupEditWindow() {
       setIconColor(p.iconColor ?? "");
       setIconBase64(p.iconBase64);
       setLibraryIcon(p.libraryIcon);
+      setInheritViewMode(!p.viewMode);
+      setViewMode(p.viewMode ?? p.parentViewMode ?? "grid");
+      setInheritListColumns(!p.listColumns);
+      setListColumns(p.listColumns ?? p.parentListColumns ?? 1);
+      setParentViewMode(p.parentViewMode ?? "grid");
+      setParentListColumns(p.parentListColumns ?? 1);
       setReady(true);
       // フォーカスは次の tick で
       setTimeout(() => {
@@ -109,7 +129,13 @@ export function GroupEditWindow() {
   const handleSave = async () => {
     const trimmed = label.trim();
     if (!trimmed) return;
-    await emit("group-edit-save", { label: trimmed, columns, rows, icon: icon || undefined, iconColor: iconColor || undefined, iconBase64: iconBase64 || undefined, libraryIcon: libraryIcon || undefined } satisfies GroupEditResultPayload);
+    await emit("group-edit-save", {
+      label: trimmed, columns, rows,
+      icon: icon || undefined, iconColor: iconColor || undefined,
+      iconBase64: iconBase64 || undefined, libraryIcon: libraryIcon || undefined,
+      viewMode: inheritViewMode ? undefined : viewMode,
+      listColumns: inheritListColumns ? undefined : listColumns,
+    } satisfies GroupEditResultPayload);
     try { await getCurrentWebviewWindow().close(); } catch { /* already closed */ }
   };
 
@@ -238,6 +264,49 @@ export function GroupEditWindow() {
               {columns * rows} スロット
             </span>
           </div>
+        </div>
+
+        {/* 表示設定 */}
+        <div className="item-edit-field">
+          <label>表示モード</label>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer", fontSize: 11, color: "var(--text-muted)" }}>
+              <input type="checkbox" checked={inheritViewMode} onChange={(e) => setInheritViewMode(e.target.checked)} />
+              親設定を継承 ({parentViewMode === "grid" ? "グリッド" : "リスト"})
+            </label>
+          </div>
+          {!inheritViewMode && (
+            <select
+              value={viewMode}
+              onChange={(e) => setViewMode(e.target.value as "grid" | "list")}
+              style={{ width: "100%", padding: "4px 8px", fontSize: 12, background: "var(--bg-primary)", color: "var(--text-primary)", border: "1px solid var(--border-color)", borderRadius: 3 }}
+            >
+              <option value="grid">グリッド (アイコン表示)</option>
+              <option value="list">リスト (コンパクト表示)</option>
+            </select>
+          )}
+        </div>
+
+        <div className="item-edit-field">
+          <label>リスト列数</label>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer", fontSize: 11, color: "var(--text-muted)" }}>
+              <input type="checkbox" checked={inheritListColumns} onChange={(e) => setInheritListColumns(e.target.checked)} />
+              親設定を継承 ({parentListColumns}列)
+            </label>
+          </div>
+          {!inheritListColumns && (
+            <select
+              value={listColumns}
+              onChange={(e) => setListColumns(Number(e.target.value))}
+              style={{ width: "100%", padding: "4px 8px", fontSize: 12, background: "var(--bg-primary)", color: "var(--text-primary)", border: "1px solid var(--border-color)", borderRadius: 3 }}
+            >
+              <option value="1">1列</option>
+              <option value="2">2列</option>
+              <option value="3">3列</option>
+              <option value="4">4列</option>
+            </select>
+          )}
         </div>
 
         {/* プレビュー */}

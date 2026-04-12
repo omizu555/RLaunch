@@ -91,6 +91,16 @@
   background: rgba(var(--accent-rgb, 100, 149, 237), 0.15);
 }
 
+/* ── コンパクト（リスト）モード ── */
+.group-popup-compact {
+  grid-template-rows: none !important;
+  grid-auto-rows: var(--compact-row-height, 32px);
+  gap: 2px;
+}
+.group-popup-compact .btn {
+  height: var(--compact-row-height, 32px);
+}
+
 /* ── 右クリックコンテキストメニュー ── */
 .group-popup-context-menu {
   position: absolute;

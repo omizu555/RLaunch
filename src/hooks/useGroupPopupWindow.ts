@@ -23,12 +23,19 @@ interface UseGroupPopupWindowOptions {
   onClosed?: () => void;
 }
 
+/** 親から渡す表示設定 */
+interface ParentDisplaySettings {
+  viewMode: "grid" | "list";
+  listColumns: number;
+}
+
 export function useGroupPopupWindow({
   onLaunch,
   onGroupUpdate,
   onClosed,
 }: UseGroupPopupWindowOptions) {
   const pendingGroup = useRef<GroupItem | null>(null);
+  const pendingParentDisplay = useRef<ParentDisplaySettings>({ viewMode: "grid", listColumns: 1 });
   const onLaunchRef = useStableRef(onLaunch);
   const onGroupUpdateRef = useStableRef(onGroupUpdate);
   const onClosedRef = useStableRef(onClosed);
@@ -41,7 +48,11 @@ export function useGroupPopupWindow({
       closedEvent: "group-popup-closed",
 
       getInitPayload: (): GroupPopupInitPayload | null =>
-        pendingGroup.current ? { group: pendingGroup.current } : null,
+        pendingGroup.current ? {
+          group: pendingGroup.current,
+          parentViewMode: pendingParentDisplay.current.viewMode,
+          parentListColumns: pendingParentDisplay.current.listColumns,
+        } : null,
 
       onResult: (payload: { item: LauncherItem }) => {
         onLaunchRef.current?.(payload.item);
@@ -88,13 +99,16 @@ export function useGroupPopupWindow({
 
   /** グループポップアップを開く（クリック位置を基準に配置） */
   const openGroupPopup = useCallback(
-    async (group: GroupItem) => {
+    async (group: GroupItem, parentDisplay?: ParentDisplaySettings) => {
       pendingGroup.current = group;
+      pendingParentDisplay.current = parentDisplay ?? { viewMode: "grid", listColumns: 1 };
 
-      // グループのグリッドサイズからウィンドウサイズを算出（論理ピクセル）
-      const { w, h } = calcPopupSize(group.gridColumns, group.gridRows);
+      // 表示モードに応じてウィンドウサイズを算出
+      const effectiveViewMode = group.viewMode ?? parentDisplay?.viewMode ?? "grid";
+      const { w, h } = effectiveViewMode === "list"
+        ? calcPopupSize(group.gridColumns, group.gridRows, 64, 0)
+        : calcPopupSize(group.gridColumns, group.gridRows);
 
-      // カーソル位置 + モニター作業領域を取得し、マルチモニター対応で配置
       const overrides = await positionWindowAtCursor(w, h);
 
       await openWindow(overrides);

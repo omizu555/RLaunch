@@ -209,217 +209,242 @@ export function SettingsWindow() {
       </div>
 
       <div className="settings-body">
-        {/* --- テーマ --- */}
-        <div className="setting-group">
-          <label className="setting-label">テーマ</label>
-          <div className="setting-theme-row">
+        {/* ═══ 外観 ═══ */}
+        <div className="setting-section">
+          <div className="setting-section-title">🎨 外観</div>
+
+          {/* テーマ */}
+          <div className="setting-group">
+            <label className="setting-label">テーマ</label>
+            <div className="setting-theme-row">
+              <select
+                className="setting-select"
+                value={draft.theme}
+                onChange={(e) => update("theme", e.target.value)}
+              >
+                {themes.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.label}{t.author !== "builtin" ? ` (${t.author})` : ""}
+                  </option>
+                ))}
+              </select>
+              {themesDir && (
+                <button
+                  className="settings-btn secondary small"
+                  title="テーマフォルダを開く"
+                  onClick={() => invoke("open_file_location", { path: themesDir + "\\" })}
+                >
+                  📁
+                </button>
+              )}
+              {sampleThemesDir && (
+                <button
+                  className="settings-btn secondary small"
+                  title="サンプルテーマフォルダを開く（ここからテーマフォルダへコピー）"
+                  onClick={() => invoke("open_file_location", { path: sampleThemesDir + "\\" })}
+                >
+                  📦
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* セルサイズ */}
+          <div className="setting-group">
+            <label className="setting-label">
+              セルサイズ: {draft.cellSize}px
+            </label>
+            <input
+              className="setting-range"
+              type="range"
+              min={40}
+              max={120}
+              step={4}
+              value={draft.cellSize}
+              onChange={(e) => update("cellSize", parseInt(e.target.value))}
+            />
+            <div className="setting-hint">
+              ウィンドウサイズは セルサイズ × 列数 × 行数 から自動計算されます
+            </div>
+          </div>
+
+          {/* ラベル表示 */}
+          <div className="setting-group">
+            <label className="setting-toggle">
+              <input
+                type="checkbox"
+                checked={draft.showLabels}
+                onChange={(e) => update("showLabels", e.target.checked)}
+              />
+              <span>ラベルを表示</span>
+            </label>
+          </div>
+
+          {/* ラベルフォントサイズ */}
+          <div className="setting-group">
+            <label className="setting-label">
+              ラベルフォントサイズ: {draft.labelFontSize ?? 10}px
+            </label>
+            <input
+              className="setting-range"
+              type="range"
+              min={8}
+              max={16}
+              step={1}
+              value={draft.labelFontSize ?? 10}
+              onChange={(e) => update("labelFontSize", parseInt(e.target.value))}
+            />
+          </div>
+        </div>
+
+        {/* ═══ 表示 ═══ */}
+        <div className="setting-section">
+          <div className="setting-section-title">📐 レイアウト</div>
+
+          {/* グリッドサイズ */}
+          <div className="setting-group">
+            <label className="setting-label">グリッドサイズ (全タブ共通デフォルト)</label>
+            <div className="setting-row">
+              <div className="setting-group">
+                <label className="setting-label-sub">列数</label>
+                <input
+                  className="setting-input"
+                  type="number"
+                  min={4}
+                  max={16}
+                  value={draft.defaultGridColumns}
+                  onChange={(e) => update("defaultGridColumns", parseInt(e.target.value) || 8)}
+                />
+              </div>
+              <div className="setting-group">
+                <label className="setting-label-sub">行数</label>
+                <input
+                  className="setting-input"
+                  type="number"
+                  min={2}
+                  max={10}
+                  value={draft.defaultGridRows}
+                  onChange={(e) => update("defaultGridRows", parseInt(e.target.value) || 4)}
+                />
+              </div>
+              <div className="setting-group" style={{ justifyContent: "flex-end" }}>
+                <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                  {draft.defaultGridColumns * draft.defaultGridRows} スロット
+                </span>
+              </div>
+            </div>
+          </div>
+          {gridChanged && (
+            <div style={{
+              fontSize: "11px",
+              color: "var(--accent-color)",
+              background: "rgba(137, 180, 250, 0.08)",
+              padding: "6px 10px",
+              borderRadius: "4px",
+              lineHeight: 1.4,
+            }}>
+              ⚠ グリッドサイズの変更はすべてのタブに適用されます。既存アイテムは保持されます。
+            </div>
+          )}
+
+          {/* 表示モード */}
+          <div className="setting-group">
+            <label className="setting-label">表示モード (全体デフォルト)</label>
             <select
               className="setting-select"
-              value={draft.theme}
-              onChange={(e) => update("theme", e.target.value)}
+              value={draft.viewMode ?? "grid"}
+              onChange={(e) => update("viewMode", e.target.value as "grid" | "list")}
             >
-              {themes.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.label}{t.author !== "builtin" ? ` (${t.author})` : ""}
-                </option>
+              <option value="grid">グリッド (アイコン表示)</option>
+              <option value="list">リスト (コンパクト表示)</option>
+            </select>
+          </div>
+
+          {/* リスト列数 */}
+          <div className="setting-group">
+            <label className="setting-label">リスト列数 (全体デフォルト)</label>
+            <select
+              className="setting-select"
+              value={draft.listColumns ?? 1}
+              onChange={(e) => update("listColumns", Number(e.target.value))}
+            >
+              <option value="1">1列</option>
+              <option value="2">2列</option>
+              <option value="3">3列</option>
+              <option value="4">4列</option>
+            </select>
+          </div>
+        </div>
+
+        {/* ═══ 動作 ═══ */}
+        <div className="setting-section">
+          <div className="setting-section-title">⚡ 動作</div>
+
+          {/* ホットキー */}
+          <div className="setting-group">
+            <label className="setting-label">ホットキー</label>
+            <input
+              className="setting-input"
+              type="text"
+              value={draft.hotkey}
+              onChange={(e) => update("hotkey", e.target.value)}
+              placeholder="例: Ctrl+Space"
+            />
+          </div>
+
+          {/* 表示位置 */}
+          <div className="setting-group">
+            <label className="setting-label">表示位置</label>
+            <select
+              className="setting-select"
+              value={draft.windowPosition}
+              onChange={(e) => update("windowPosition", e.target.value as AppSettings["windowPosition"])}
+            >
+              {POSITION_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
-            {themesDir && (
-              <button
-                className="settings-btn secondary small"
-                title="テーマフォルダを開く"
-                onClick={() => invoke("open_file_location", { path: themesDir + "\\" })}
-              >
-                📁
-              </button>
-            )}
-            {sampleThemesDir && (
-              <button
-                className="settings-btn secondary small"
-                title="サンプルテーマフォルダを開く（ここからテーマフォルダへコピー）"
-                onClick={() => invoke("open_file_location", { path: sampleThemesDir + "\\" })}
-              >
-                📦
-              </button>
-            )}
+          </div>
+
+          {/* 自動起動 */}
+          <div className="setting-group">
+            <label className="setting-toggle">
+              <input
+                type="checkbox"
+                checked={draft.autoStart}
+                onChange={(e) => update("autoStart", e.target.checked)}
+              />
+              <span>Windows 起動時に自動起動</span>
+            </label>
+          </div>
+
+          {/* 起動後に隠す */}
+          <div className="setting-group">
+            <label className="setting-toggle">
+              <input
+                type="checkbox"
+                checked={draft.hideOnLaunch}
+                onChange={(e) => update("hideOnLaunch", e.target.checked)}
+              />
+              <span>アプリ起動後にウィンドウを隠す</span>
+            </label>
           </div>
         </div>
 
-        {/* --- ホットキー --- */}
-        <div className="setting-group">
-          <label className="setting-label">ホットキー</label>
-          <input
-            className="setting-input"
-            type="text"
-            value={draft.hotkey}
-            onChange={(e) => update("hotkey", e.target.value)}
-            placeholder="例: Ctrl+Space"
-          />
-        </div>
+        {/* ═══ アプリ ═══ */}
+        <div className="setting-section">
+          <div className="setting-section-title">🏷 アプリ</div>
 
-        {/* --- 表示位置 --- */}
-        <div className="setting-group">
-          <label className="setting-label">表示位置</label>
-          <select
-            className="setting-select"
-            value={draft.windowPosition}
-            onChange={(e) => update("windowPosition", e.target.value as AppSettings["windowPosition"])}
-          >
-            {POSITION_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* --- グリッドサイズ --- */}
-        <div className="setting-row">
           <div className="setting-group">
-            <label className="setting-label">列数</label>
+            <label className="setting-label">アプリタイトル</label>
             <input
               className="setting-input"
-              type="number"
-              min={4}
-              max={16}
-              value={draft.defaultGridColumns}
-              onChange={(e) => update("defaultGridColumns", parseInt(e.target.value) || 8)}
+              type="text"
+              value={draft.appTitle ?? "RLaunch"}
+              placeholder="空欄はタイトル非表示"
+              onChange={(e) => update("appTitle", e.target.value)}
             />
           </div>
-          <div className="setting-group">
-            <label className="setting-label">行数</label>
-            <input
-              className="setting-input"
-              type="number"
-              min={2}
-              max={10}
-              value={draft.defaultGridRows}
-              onChange={(e) => update("defaultGridRows", parseInt(e.target.value) || 4)}
-            />
-          </div>
-          <div className="setting-group" style={{ justifyContent: "flex-end" }}>
-            <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-              {draft.defaultGridColumns * draft.defaultGridRows} スロット
-            </span>
-          </div>
-        </div>
-        {gridChanged && (
-          <div style={{
-            fontSize: "11px",
-            color: "var(--accent-color)",
-            background: "rgba(137, 180, 250, 0.08)",
-            padding: "6px 10px",
-            borderRadius: "4px",
-            lineHeight: 1.4,
-          }}>
-            ⚠ グリッドサイズの変更はすべてのタブに適用されます。既存アイテムは保持されます。
-          </div>
-        )}
-
-        {/* --- セルサイズ --- */}
-        <div className="setting-group">
-          <label className="setting-label">
-            セルサイズ: {draft.cellSize}px
-          </label>
-          <input
-            className="setting-range"
-            type="range"
-            min={40}
-            max={120}
-            step={4}
-            value={draft.cellSize}
-            onChange={(e) => update("cellSize", parseInt(e.target.value))}
-          />
-          <div className="setting-hint">
-            ウィンドウサイズは セルサイズ × 列数 × 行数 から自動計算されます
-          </div>
-        </div>
-
-        {/* --- トグル設定 --- */}
-        <div className="setting-group">
-          <label className="setting-toggle">
-            <input
-              type="checkbox"
-              checked={draft.autoStart}
-              onChange={(e) => update("autoStart", e.target.checked)}
-            />
-            <span>Windows 起動時に自動起動</span>
-          </label>
-        </div>
-
-        <div className="setting-group">
-          <label className="setting-toggle">
-            <input
-              type="checkbox"
-              checked={draft.hideOnLaunch}
-              onChange={(e) => update("hideOnLaunch", e.target.checked)}
-            />
-            <span>アプリ起動後にウィンドウを隠す</span>
-          </label>
-        </div>
-
-        <div className="setting-group">
-          <label className="setting-toggle">
-            <input
-              type="checkbox"
-              checked={draft.showLabels}
-              onChange={(e) => update("showLabels", e.target.checked)}
-            />
-            <span>ラベルを表示</span>
-          </label>
-        </div>
-
-        {/* 表示モード選択 */}
-        <div className="setting-group">
-          <label className="setting-label">表示モード (全体デフォルト)</label>
-          <select
-            className="setting-select"
-            value={draft.viewMode ?? "grid"}
-            onChange={(e) => update("viewMode", e.target.value as "grid" | "list")}
-          >
-            <option value="grid">グリッド (アイコン表示)</option>
-            <option value="list">リスト (コンパクト表示)</option>
-          </select>
-        </div>
-
-        {/* リスト列数 */}
-        <div className="setting-group">
-          <label className="setting-label">リスト列数 (全体デフォルト)</label>
-          <select
-            className="setting-select"
-            value={draft.listColumns ?? 1}
-            onChange={(e) => update("listColumns", Number(e.target.value))}
-          >
-            <option value="1">1列</option>
-            <option value="2">2列</option>
-            <option value="3">3列</option>
-            <option value="4">4列</option>
-          </select>
-        </div>
-
-        {/* P-29: ラベルフォントサイズ */}
-        <div className="setting-group">
-          <label className="setting-label">
-            ラベルフォントサイズ: {draft.labelFontSize ?? 10}px
-          </label>
-          <input
-            className="setting-range"
-            type="range"
-            min={8}
-            max={16}
-            step={1}
-            value={draft.labelFontSize ?? 10}
-            onChange={(e) => update("labelFontSize", parseInt(e.target.value))}
-          />
-        </div>
-
-        <div className="setting-group">
-          <label className="setting-label">アプリタイトル</label>
-          <input
-            className="setting-input"
-            type="text"
-            value={draft.appTitle ?? "RLaunch"}
-            placeholder="空欄はタイトル非表示"
-            onChange={(e) => update("appTitle", e.target.value)}
-          />
         </div>
 
       </div>

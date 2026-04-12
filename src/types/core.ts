@@ -66,6 +66,10 @@ export interface GroupItem {
   items: GridCell[];
   gridColumns: number;
   gridRows: number;
+  /** 表示モード（undefined = 親タブ/全体設定を継承） */
+  viewMode?: "grid" | "list";
+  /** リスト列数（undefined = 親タブ/全体設定を継承） */
+  listColumns?: number;
   createdAt: string;
   updatedAt: string;
 }
