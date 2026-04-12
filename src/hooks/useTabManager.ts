@@ -19,6 +19,7 @@ import {
   setTabColor,
   duplicateTab,
   resizeTabGrid,
+  setTabDisplaySettings,
 } from "../stores/launcherStore";
 import { DEFAULT_SETTINGS } from "../types";
 import { createLauncherItemFromPath } from "../utils/fileRegistration";
@@ -133,6 +134,16 @@ export function useTabManager(onNotify: (msg: string) => void) {
       const newTabs = await resizeTabGrid(tabId, cols, rows);
       setTabs(newTabs);
       onNotify(`グリッドサイズを ${cols}×${rows} に変更しました`);
+    },
+    [onNotify]
+  );
+
+  // ── タブ個別の表示設定変更 ──
+  const handleTabDisplaySettings = useCallback(
+    async (tabId: string, displaySettings: { viewMode?: "grid" | "list"; listColumns?: number }) => {
+      const newTabs = await setTabDisplaySettings(tabId, displaySettings);
+      setTabs(newTabs);
+      onNotify("タブの表示設定を変更しました");
     },
     [onNotify]
   );
@@ -263,6 +274,7 @@ export function useTabManager(onNotify: (msg: string) => void) {
     handleTabColorChange,
     handleDuplicateTab,
     handleResizeTab,
+    handleTabDisplaySettings,
     // cell ops
     handleCellClear,
     handleCellUpdate,

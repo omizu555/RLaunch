@@ -22,6 +22,7 @@ function getTypeEmoji(type: string): string {
 
 interface LauncherListProps {
   tab: Tab;
+  listColumns?: number;
   onCellClick: (index: number, cell: GridCell) => void;
   onCellClear: (index: number) => void;
   onCellSwap: (fromIndex: number, toIndex: number) => void;
@@ -42,6 +43,7 @@ interface LauncherListProps {
 
 export function LauncherList({
   tab,
+  listColumns = 1,
   onCellClick,
   onCellClear,
   onCellSwap,
@@ -126,15 +128,28 @@ export function LauncherList({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (nonEmptyCells.length === 0) return;
+      const cols = listColumns;
 
       switch (e.key) {
         case "ArrowDown":
           e.preventDefault();
-          setFocusIndex((prev) => Math.min(prev + 1, nonEmptyCells.length - 1));
+          setFocusIndex((prev) => Math.min(prev + cols, nonEmptyCells.length - 1));
           break;
         case "ArrowUp":
           e.preventDefault();
-          setFocusIndex((prev) => Math.max(prev - 1, 0));
+          setFocusIndex((prev) => Math.max(prev - cols, 0));
+          break;
+        case "ArrowRight":
+          if (cols > 1) {
+            e.preventDefault();
+            setFocusIndex((prev) => Math.min(prev + 1, nonEmptyCells.length - 1));
+          }
+          break;
+        case "ArrowLeft":
+          if (cols > 1) {
+            e.preventDefault();
+            setFocusIndex((prev) => Math.max(prev - 1, 0));
+          }
           break;
         case "Home":
           e.preventDefault();
@@ -163,7 +178,7 @@ export function LauncherList({
 
     el.addEventListener("keydown", handleKeyDown);
     return () => el.removeEventListener("keydown", handleKeyDown);
-  }, [nonEmptyCells, focusIndex, handleClick, onCellClear]);
+  }, [nonEmptyCells, focusIndex, handleClick, onCellClear, listColumns]);
 
   // フォーカスが範囲外になったらクランプ
   useEffect(() => {
@@ -172,8 +187,16 @@ export function LauncherList({
     }
   }, [nonEmptyCells.length, focusIndex]);
 
+  const cols = Math.max(1, Math.min(4, listColumns));
+
   return (
-    <div className="launcher-list" ref={listRef} tabIndex={0} role="listbox">
+    <div
+      className={`launcher-list ${cols > 1 ? "multi-column" : ""}`}
+      ref={listRef}
+      tabIndex={0}
+      role="listbox"
+      style={cols > 1 ? { "--list-columns": cols } as React.CSSProperties : undefined}
+    >
       {nonEmptyCells.length === 0 && (
         <div
           className="list-empty"

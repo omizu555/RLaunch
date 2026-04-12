@@ -369,7 +369,7 @@ export function SettingsWindow() {
 
         {/* 表示モード選択 */}
         <div className="setting-group">
-          <label className="setting-label">表示モード</label>
+          <label className="setting-label">表示モード (全体デフォルト)</label>
           <select
             className="setting-select"
             value={draft.viewMode ?? "grid"}
@@ -377,6 +377,21 @@ export function SettingsWindow() {
           >
             <option value="grid">グリッド (アイコン表示)</option>
             <option value="list">リスト (テキスト表示)</option>
+          </select>
+        </div>
+
+        {/* リスト列数 */}
+        <div className="setting-group">
+          <label className="setting-label">リスト列数 (全体デフォルト)</label>
+          <select
+            className="setting-select"
+            value={draft.listColumns ?? 1}
+            onChange={(e) => update("listColumns", Number(e.target.value))}
+          >
+            <option value="1">1列</option>
+            <option value="2">2列</option>
+            <option value="3">3列</option>
+            <option value="4">4列</option>
           </select>
         </div>
 

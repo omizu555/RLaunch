@@ -26,11 +26,12 @@ import { useTabManager } from "./hooks/useTabManager";
 import { useWidgetManager } from "./hooks/useWidgetManager";
 import { useSettingsWindow } from "./hooks/useSettingsWindow";
 import { useWidgetSettingsWindow } from "./hooks/useWidgetSettingsWindow";
-import { useWindowSize } from "./hooks/useWindowSize";
+import { useWindowSize, resizeMainWindow } from "./hooks/useWindowSize";
 import { listThemes, applyThemeById } from "./utils/themeLoader";
 import type { ThemeInfo } from "./utils/themeLoader";
 import { applyWindowEffect } from "./utils/applyWindowEffect";
 import { importData } from "./stores/launcherStore";
+import { TabSettingsDialog } from "./components/TabSettingsDialog";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
   const groupPopupRef = useRef<{ index: number } | null>(null);
   const [isDraggingItem, setIsDraggingItem] = useState(false);
   const [invalidPaths, setInvalidPaths] = useState<Set<string>>(new Set());
+  const [tabSettingsTarget, setTabSettingsTarget] = useState<string | null>(null);
   const groupEditRef = useRef<
     | { mode: "create"; index: number }
     | { mode: "rename"; index: number; group: GroupItem }
@@ -63,6 +65,7 @@ function App() {
     setActiveTabId, setTabs,
     handleAddTab, handleRenameTab, handleRemoveTab,
     handleReorderTabs, handleTabColorChange, handleDuplicateTab, handleResizeTab,
+    handleTabDisplaySettings,
     handleCellClear, handleCellSwap, handleNativeDrop,
     handleSettingsChange, loadData,
   } = tabManager;
@@ -106,7 +109,14 @@ function App() {
   }, [loading, activeTab]);
 
   // ── ウィンドウサイズ管理 ──
-  const { resize } = useWindowSize(settings, loading);
+  const { resize } = useWindowSize(settings, activeTab, loading);
+
+  // タブ切替時にウィンドウサイズを再計算
+  useEffect(() => {
+    if (!loading && activeTab) {
+      resizeMainWindow(settings, activeTab);
+    }
+  }, [activeTabId, loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── 設定ウィンドウ ──
   const onSettingsSave = useCallback(async (newSettings: AppSettings) => {
@@ -577,11 +587,13 @@ function App() {
         onTabColorChange={handleTabColorChange}
         isDraggingItem={isDraggingItem}
         onResizeTab={handleResizeTab}
+        onTabSettings={setTabSettingsTarget}
       />
 
-      {activeTab && (settings.viewMode ?? "grid") === "list" ? (
+      {activeTab && (activeTab.viewMode ?? settings.viewMode ?? "grid") === "list" ? (
         <LauncherList
           tab={activeTab}
+          listColumns={activeTab.listColumns ?? settings.listColumns ?? 1}
           onCellClick={handleCellClick}
           onCellClear={handleCellClear}
           onCellSwap={handleCellSwap}
@@ -642,6 +654,19 @@ function App() {
           onClose={() => setEditTarget(null)}
         />
       )}
+
+      {tabSettingsTarget && (() => {
+        const targetTab = tabs.find((t) => t.id === tabSettingsTarget);
+        return targetTab ? (
+          <TabSettingsDialog
+            tab={targetTab}
+            globalViewMode={settings.viewMode ?? "grid"}
+            globalListColumns={settings.listColumns ?? 1}
+            onSave={handleTabDisplaySettings}
+            onClose={() => setTabSettingsTarget(null)}
+          />
+        ) : null;
+      })()}
 
     </div>
   );

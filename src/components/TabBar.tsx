@@ -29,6 +29,8 @@ interface TabBarProps {
   isDraggingItem?: boolean;
   /** P-25: タブごとのグリッドサイズ変更 */
   onResizeTab?: (tabId: string, cols: number, rows: number) => void;
+  /** タブ個別の表示設定 */
+  onTabSettings?: (tabId: string) => void;
 }
 
 interface TabMenu {
@@ -49,6 +51,7 @@ export function TabBar({
   onTabColorChange,
   isDraggingItem,
   onResizeTab,
+  onTabSettings,
 }: TabBarProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [menu, setMenu] = useState<TabMenu | null>(null);
@@ -260,6 +263,18 @@ export function TabBar({
                 }}
               >
                 📐 グリッドサイズを変更
+              </div>
+            )}
+            {/* タブ個別表示設定 */}
+            {onTabSettings && (
+              <div
+                className="tab-context-item"
+                onClick={() => {
+                  onTabSettings(menu.tabId);
+                  setMenu(null);
+                }}
+              >
+                ⚙ タブ表示設定
               </div>
             )}
             {/* P-04: カラー変更 */}

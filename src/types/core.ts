@@ -97,4 +97,8 @@ export interface Tab {
   gridColumns: number;
   gridRows: number;
   items: GridCell[];
+  /** タブ個別: 表示モード (未設定時は全体設定にフォールバック) */
+  viewMode?: "grid" | "list";
+  /** タブ個別: リスト表示の列数 (未設定時は全体設定にフォールバック) */
+  listColumns?: number;
 }

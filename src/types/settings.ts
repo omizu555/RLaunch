@@ -24,6 +24,8 @@ export interface AppSettings {
   windowOpacity?: number;
   /** 表示モード: grid=アイコングリッド, list=テキストリスト */
   viewMode?: "grid" | "list";
+  /** リスト表示の列数 (1-4, デフォルト1) */
+  listColumns?: number;
 }
 
 /** デフォルト設定 */
@@ -43,4 +45,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   labelFontSize: 10,
   windowOpacity: 100,
   viewMode: "grid",
+  listColumns: 1,
 };

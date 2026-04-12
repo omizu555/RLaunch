@@ -262,6 +262,8 @@ export async function duplicateTab(tabId: string): Promise<Tab[]> {
     color: (source as Tab & { color?: string }).color,
     gridColumns: source.gridColumns,
     gridRows: source.gridRows,
+    viewMode: source.viewMode,
+    listColumns: source.listColumns,
     items: JSON.parse(JSON.stringify(source.items)).map((item: GridCell) => {
       if (item) return { ...item, id: crypto.randomUUID() };
       return null;
@@ -285,6 +287,25 @@ export async function resizeTabGrid(
   tab.gridColumns = newCols;
   tab.gridRows = newRows;
   await saveTabs(tabs);
+  return tabs;
+}
+
+/** タブ個別の表示設定を更新 */
+export async function setTabDisplaySettings(
+  tabId: string,
+  displaySettings: { viewMode?: "grid" | "list"; listColumns?: number }
+): Promise<Tab[]> {
+  const tabs = await getTabs();
+  const tab = tabs.find((t) => t.id === tabId);
+  if (tab) {
+    if (displaySettings.viewMode !== undefined) {
+      tab.viewMode = displaySettings.viewMode || undefined;
+    }
+    if (displaySettings.listColumns !== undefined) {
+      tab.listColumns = displaySettings.listColumns || undefined;
+    }
+    await saveTabs(tabs);
+  }
   return tabs;
 }
 

@@ -12,6 +12,13 @@
   background: var(--bg-secondary);
 }
 
+/* 複数列レイアウト */
+.launcher-list.multi-column {
+  display: grid;
+  grid-template-columns: repeat(var(--list-columns, 1), 1fr);
+  gap: 1px;
+}
+
 .list-row {
   display: flex;
   align-items: center;
