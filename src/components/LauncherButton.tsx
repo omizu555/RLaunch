@@ -27,6 +27,7 @@ interface LauncherButtonProps {
   cell: GridCell;
   index: number;
   showLabels?: boolean;
+  compact?: boolean;
   isDragSource?: boolean;
   isDragOver?: boolean;
   isFocused?: boolean;
@@ -40,6 +41,7 @@ export function LauncherButton({
   cell,
   index,
   showLabels = true,
+  compact = false,
   isDragSource = false,
   isDragOver = false,
   isFocused = false,
@@ -49,11 +51,13 @@ export function LauncherButton({
   onPointerDown,
 }: LauncherButtonProps) {
 
+  const compactClass = compact ? " compact" : "";
+
   // 空ボタン
   if (!cell) {
     return (
       <div
-        className={`btn empty ${isDragOver ? "drag-over" : ""} ${isFocused ? "focused" : ""}`}
+        className={`btn empty${compactClass} ${isDragOver ? "drag-over" : ""} ${isFocused ? "focused" : ""}`}
         data-cell-index={index}
         role="gridcell"
         aria-label="空きスロット"
@@ -66,7 +70,7 @@ export function LauncherButton({
   if (isWidgetItem(cell)) {
     return (
       <div
-        className={`btn widget ${isDragOver ? "drag-over" : ""} ${isDragSource ? "dragging" : ""} ${isFocused ? "focused" : ""}`}
+        className={`btn widget${compactClass} ${isDragOver ? "drag-over" : ""} ${isDragSource ? "dragging" : ""} ${isFocused ? "focused" : ""}`}
         data-cell-index={index}
         role="gridcell"
         aria-label={`ウィジェット: ${cell.label ?? cell.widgetType}`}
@@ -85,7 +89,7 @@ export function LauncherButton({
     const childCount = cell.items.filter(Boolean).length;
     return (
       <div
-        className={`btn group-btn ${isDragOver ? "drag-over" : ""} ${isDragSource ? "dragging" : ""} ${isFocused ? "focused" : ""}`}
+        className={`btn group-btn${compactClass} ${isDragOver ? "drag-over" : ""} ${isDragSource ? "dragging" : ""} ${isFocused ? "focused" : ""}`}
         data-cell-index={index}
         role="gridcell"
         aria-label={`グループ: ${cell.label} (${childCount} アイテム)`}
@@ -113,7 +117,7 @@ export function LauncherButton({
   const item: LauncherItem = cell;
   return (
     <div
-      className={`btn ${isDragOver ? "drag-over" : ""} ${isDragSource ? "dragging" : ""} ${isFocused ? "focused" : ""}`}
+      className={`btn${compactClass} ${isDragOver ? "drag-over" : ""} ${isDragSource ? "dragging" : ""} ${isFocused ? "focused" : ""}`}
       data-cell-index={index}
       role="gridcell"
       aria-label={`${item.label} (${item.type})`}

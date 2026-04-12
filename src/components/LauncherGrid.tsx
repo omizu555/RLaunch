@@ -11,6 +11,10 @@ import { ContextMenu, type MenuPosition } from "./ContextMenu";
 interface LauncherGridProps {
   tab: Tab;
   showLabels?: boolean;
+  /** list=コンパクト横長セル, grid=正方形セル */
+  viewMode?: "grid" | "list";
+  /** リスト表示時の列数 (1-4) */
+  listColumns?: number;
   onCellClick: (index: number, cell: GridCell) => void;
   onCellClear: (index: number) => void;
   onCellSwap: (fromIndex: number, toIndex: number) => void;
@@ -41,6 +45,8 @@ const DRAG_THRESHOLD = 5;
 export function LauncherGrid({
   tab,
   showLabels = true,
+  viewMode = "grid",
+  listColumns,
   onCellClick,
   onCellClear,
   onCellSwap,
@@ -74,7 +80,7 @@ export function LauncherGrid({
   /** キーボード操作 */
   const handleGridKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      const cols = tab.gridColumns;
+      const cols = viewMode === "list" ? (listColumns ?? 1) : tab.gridColumns;
       const total = tab.gridColumns * tab.gridRows;
       let idx = focusedIndex ?? 0;
 
@@ -113,7 +119,7 @@ export function LauncherGrid({
       }
       setFocusedIndex(idx);
     },
-    [focusedIndex, tab.gridColumns, tab.gridRows, tab.items, onCellClick, onCellClear],
+    [focusedIndex, tab.gridColumns, tab.gridRows, tab.items, onCellClick, onCellClear, viewMode, listColumns],
   );
 
   // ── ポインタベース D&D（HTML5 DnD は Tauri ネイティブ D&D と競合するため使わない） ──
@@ -248,18 +254,24 @@ export function LauncherGrid({
     return covered;
   }, [cells, tab.gridColumns, totalCells]);
 
+  const isCompact = viewMode === "list";
+  const effectiveCols = isCompact ? (listColumns ?? 1) : tab.gridColumns;
+
   return (
     <div className="grid-area">
       <div
         ref={gridRef}
-        className="grid"
+        className={`grid ${isCompact ? "grid-compact" : ""}`}
         role="grid"
         aria-rowcount={tab.gridRows}
-        aria-colcount={tab.gridColumns}
+        aria-colcount={effectiveCols}
         tabIndex={0}
         onKeyDown={handleGridKeyDown}
         onDragOver={(e) => e.preventDefault()}
-        style={{ "--grid-cols": tab.gridColumns, "--grid-rows": tab.gridRows } as React.CSSProperties}
+        style={{
+          "--grid-cols": effectiveCols,
+          "--grid-rows": isCompact ? Math.ceil(totalCells / effectiveCols) : tab.gridRows,
+        } as React.CSSProperties}
       >
         {cells.map((cell, i) => {
           // P-30: スパンウィジェットにカバーされたセルはスキップ
@@ -277,6 +289,7 @@ export function LauncherGrid({
                 cell={cell}
                 index={i}
                 showLabels={showLabels}
+                compact={isCompact}
                 isDragSource={dragSource === i}
                 isDragOver={displayDragOver === i}
                 isFocused={focusedIndex === i}

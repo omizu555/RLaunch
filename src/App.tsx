@@ -11,7 +11,6 @@ import { NOTIFICATION_DURATION } from "./constants";
 import { CustomTitleBar } from "./components/CustomTitleBar";
 import { TabBar } from "./components/TabBar";
 import { LauncherGrid } from "./components/LauncherGrid";
-import { LauncherList } from "./components/LauncherList";
 import { useWidgetSelectWindow } from "./hooks/useWidgetSelectWindow";
 import { SearchBar } from "./components/SearchBar";
 import { ItemEditDialog } from "./components/ItemEditDialog";
@@ -590,9 +589,11 @@ function App() {
         onTabSettings={setTabSettingsTarget}
       />
 
-      {activeTab && (activeTab.viewMode ?? settings.viewMode ?? "grid") === "list" ? (
-        <LauncherList
+      {activeTab && (
+        <LauncherGrid
           tab={activeTab}
+          showLabels={settings.showLabels}
+          viewMode={activeTab.viewMode ?? settings.viewMode ?? "grid"}
           listColumns={activeTab.listColumns ?? settings.listColumns ?? 1}
           onCellClick={handleCellClick}
           onCellClear={handleCellClear}
@@ -607,31 +608,13 @@ function App() {
           onEditItem={handleEditItem}
           onCreateGroup={handleCreateGroup}
           onEditGroup={handleEditGroup}
-          onFilePickRegister={handleFilePickRegister}
-          onRegisterUrl={handleRegisterUrl}
-          invalidPaths={invalidPaths}
-        />
-      ) : activeTab ? (
-        <LauncherGrid
-          tab={activeTab} showLabels={settings.showLabels}
-          onCellClick={handleCellClick}
-          onCellClear={handleCellClear} onCellSwap={handleCellSwap}
-          onAddWidget={openWidgetSelectWindow}
-          onWidgetSettings={handleWidgetSettings}
-          onLaunch={launcher.launch} onLaunchAdmin={launcher.launchAdmin}
-          onOpenLocation={launcher.openLocation}
-          onBrowseFolder={openFolderBrowser}
-          onCellUpdate={tabManager.handleCellUpdate}
-          onEditItem={handleEditItem}
-          onCreateGroup={handleCreateGroup}
-          onEditGroup={handleEditGroup}
           externalDragOverIndex={dragOverIndex}
           onFilePickRegister={handleFilePickRegister}
           onRegisterUrl={handleRegisterUrl}
           onDragStateChange={setIsDraggingItem}
           invalidPaths={invalidPaths}
         />
-      ) : null}
+      )}
 
       <div className="statusbar">
         <span>{activeTab?.label} — {itemCount} アイテム / {totalSlots} スロット</span>

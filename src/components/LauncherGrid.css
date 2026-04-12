@@ -210,3 +210,94 @@
   font-size: 12px;
   filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
 }
+
+/* ============================================================
+   コンパクトモード (list view) - 横長セル
+   グリッドと同じ機能だがセルが細い横長の長方形
+   ============================================================ */
+
+/* コンパクトグリッド: 列を1fr均等幅にし、行を固定高さに */
+.grid.grid-compact {
+  grid-template-columns: repeat(var(--grid-cols, 1), 1fr);
+  grid-template-rows: repeat(var(--grid-rows, 4), var(--compact-row-height, 32px));
+  gap: 2px;
+}
+
+/* コンパクトボタン: 横長レイアウト */
+.btn.compact {
+  width: 100%;
+  height: var(--compact-row-height, 32px);
+  flex-direction: row;
+  justify-content: flex-start;
+  padding: 0 8px;
+  gap: 6px;
+  border-radius: var(--border-radius-sm, 4px);
+}
+
+.btn.compact:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.btn.compact .btn-icon {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+.btn.compact .btn-icon .emoji {
+  font-size: 16px;
+}
+.btn.compact .btn-icon .group-icon {
+  font-size: 16px;
+}
+
+.btn.compact .btn-label {
+  text-align: left;
+  font-size: var(--label-font-size, 10px);
+  flex: 1;
+  min-width: 0;
+}
+
+/* コンパクトモード: 空セルを控えめに */
+.btn.compact.empty {
+  opacity: 0.3;
+  border: 1px dashed var(--border-color);
+}
+.btn.compact.empty:hover {
+  opacity: 0.6;
+}
+
+/* コンパクトモード: グループバッジ位置調整 */
+.btn.compact .group-badge {
+  position: static;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* コンパクトモード: パス警告位置調整 */
+.btn.compact .path-warning {
+  position: static;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* コンパクトモード: ウィジェットは全幅に */
+.btn.widget.compact {
+  padding: 0;
+}
+.btn.widget.compact canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* コンパクトモード: ドラッグオーバー */
+.btn.compact.drag-over {
+  transform: none;
+}
+
+/* コンパクトモード: フォーカス */
+.btn.compact.focused {
+  border-left: 3px solid var(--accent-color);
+  padding-left: 5px;
+}

@@ -23,17 +23,19 @@ export function calcWindowSize(s: AppSettings, tabOverrides?: WindowSizeOptions)
   const listCols = tabOverrides?.listColumns ?? s.listColumns ?? 1;
 
   if (viewMode === "list") {
-    const LIST_ROW_HEIGHT = 29; // 28px row + 1px gap
+    const COMPACT_ROW_HEIGHT = 32; // matches --compact-row-height
+    const COMPACT_GAP = 2;
     const totalCells = gridRows * gridCols;
-    const maxVisibleRows = Math.min(Math.ceil(totalCells / listCols), 20);
+    const compactRows = Math.ceil(totalCells / listCols);
     const width =
       s.cellSize * gridCols +
       LAYOUT.GRID_GAP * (gridCols - 1) +
       LAYOUT.GRID_PADDING +
       LAYOUT.BORDER_EXTRA;
     const height =
-      LIST_ROW_HEIGHT * maxVisibleRows +
-      8 + // list padding
+      COMPACT_ROW_HEIGHT * compactRows +
+      COMPACT_GAP * (compactRows - 1) +
+      LAYOUT.GRID_PADDING +
       LAYOUT.TITLEBAR_HEIGHT +
       LAYOUT.TABBAR_HEIGHT +
       LAYOUT.STATUSBAR_HEIGHT +

@@ -376,7 +376,7 @@ export function SettingsWindow() {
             onChange={(e) => update("viewMode", e.target.value as "grid" | "list")}
           >
             <option value="grid">グリッド (アイコン表示)</option>
-            <option value="list">リスト (テキスト表示)</option>
+            <option value="list">リスト (コンパクト表示)</option>
           </select>
         </div>
 

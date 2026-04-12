@@ -29,6 +29,7 @@
   --button-size: 72px;
   --icon-size: 32px;
   --grid-gap: 6px;
+  --compact-row-height: 32px;
   --titlebar-height: 36px;
   --tabbar-height: 32px;
 }
