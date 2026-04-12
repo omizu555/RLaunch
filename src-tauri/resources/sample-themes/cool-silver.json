@@ -1,0 +1,25 @@
+{
+  "id": "cool-silver",
+  "label": "Cool Silver",
+  "author": "builtin",
+  "variables": {
+    "--bg-primary": "#f4f6f9",
+    "--bg-secondary": "#ebeef3",
+    "--bg-button": "#e1e5ed",
+    "--bg-button-hover": "#d3d9e4",
+    "--bg-button-active": "#c5ccda",
+    "--bg-button-empty": "rgba(70, 90, 120, 0.06)",
+    "--text-primary": "#1e293b",
+    "--text-secondary": "#475569",
+    "--text-muted": "#94a3b8",
+    "--border-color": "#cbd5e1",
+    "--accent-color": "#0369a1",
+    "--accent-hover": "#075985",
+    "--shadow-color": "rgba(30, 41, 59, 0.1)",
+    "--danger-color": "#be123c",
+    "--success-color": "#15803d",
+    "--warning-color": "#c2410c",
+    "--border-radius": "6px",
+    "--border-radius-sm": "3px"
+  }
+}

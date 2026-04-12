@@ -1,0 +1,25 @@
+{
+  "id": "soft-cream",
+  "label": "Soft Cream",
+  "author": "builtin",
+  "variables": {
+    "--bg-primary": "#faf6f0",
+    "--bg-secondary": "#f3ede4",
+    "--bg-button": "#ebe4d8",
+    "--bg-button-hover": "#e0d6c6",
+    "--bg-button-active": "#d4c8b4",
+    "--bg-button-empty": "rgba(139, 119, 90, 0.08)",
+    "--text-primary": "#2c2416",
+    "--text-secondary": "#5c4f3c",
+    "--text-muted": "#a09482",
+    "--border-color": "#d8cebe",
+    "--accent-color": "#b45309",
+    "--accent-hover": "#92400e",
+    "--shadow-color": "rgba(80, 60, 30, 0.1)",
+    "--danger-color": "#b91c1c",
+    "--success-color": "#3f6212",
+    "--warning-color": "#b45309",
+    "--border-radius": "8px",
+    "--border-radius-sm": "4px"
+  }
+}
