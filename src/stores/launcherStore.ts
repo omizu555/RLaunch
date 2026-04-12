@@ -239,17 +239,6 @@ export async function reorderTabs(fromIndex: number, toIndex: number): Promise<T
   return tabs;
 }
 
-/** P-04: タブカラー変更 */
-export async function setTabColor(tabId: string, color: string): Promise<Tab[]> {
-  const tabs = await getTabs();
-  const tab = tabs.find((t) => t.id === tabId);
-  if (tab) {
-    (tab as Tab & { color?: string }).color = color || undefined;
-    await saveTabs(tabs);
-  }
-  return tabs;
-}
-
 /** P-06: タブ複製 */
 export async function duplicateTab(tabId: string): Promise<Tab[]> {
   const tabs = await getTabs();
@@ -259,7 +248,6 @@ export async function duplicateTab(tabId: string): Promise<Tab[]> {
     id: crypto.randomUUID(),
     label: `${source.label} のコピー`,
     order: tabs.length,
-    color: (source as Tab & { color?: string }).color,
     gridColumns: source.gridColumns,
     gridRows: source.gridRows,
     viewMode: source.viewMode,
@@ -290,14 +278,13 @@ export async function resizeTabGrid(
   return tabs;
 }
 
-/** タブ設定を一括更新（名前、グリッドサイズ、カラー、表示設定） */
+/** タブ設定を一括更新（名前、グリッドサイズ、表示設定） */
 export async function updateTabSettings(
   tabId: string,
   settings: {
     label?: string;
     gridColumns?: number;
     gridRows?: number;
-    color?: string;
     viewMode?: "grid" | "list";
     listColumns?: number;
   }
@@ -318,10 +305,6 @@ export async function updateTabSettings(
     tab.items = remapGridItems(tab.items, tab.gridColumns, tab.gridRows, newCols, newRows);
     tab.gridColumns = newCols;
     tab.gridRows = newRows;
-  }
-
-  if (settings.color !== undefined) {
-    tab.color = settings.color || undefined;
   }
 
   // undefined = 全体設定に従う

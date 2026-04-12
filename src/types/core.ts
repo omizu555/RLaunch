@@ -96,8 +96,6 @@ export interface Tab {
   id: string;
   label: string;
   order: number;
-  /** P-04: タブカラーマーカー */
-  color?: string;
   gridColumns: number;
   gridRows: number;
   items: GridCell[];

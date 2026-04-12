@@ -1,6 +1,6 @@
 /* ============================================================
    TabBar - タブバー
-   P-03: D&D 並び替え / P-04: カラーマーカー / P-05: 削除フォールバック / P-06: 複製
+   P-03: D&D 並び替え / P-05: 削除フォールバック / P-06: 複製
    ============================================================ */
 import "./TabBar.css";
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -164,10 +164,6 @@ export function TabBar({
             onPointerEnter={() => handleTabDragHover(tab.id)}
             onPointerLeave={handleTabDragLeave}
           >
-            {/* P-04: カラーマーカー */}
-            {(tab as Tab & { color?: string }).color && (
-              <span className="tab-color-dot" style={{ background: (tab as Tab & { color?: string }).color }} />
-            )}
             {editingId === tab.id ? (
               <input
                 ref={inputRef}

@@ -61,6 +61,26 @@
   gap: 12px;
 }
 
+/* セクション（カード風） */
+.tab-setting-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius, 6px);
+}
+
+.tab-setting-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 2px;
+}
+
 .tab-setting-group {
   display: flex;
   flex-direction: column;
@@ -84,7 +104,7 @@
   width: 100%;
   padding: 5px 8px;
   font-size: 12px;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm, 3px);
@@ -104,7 +124,7 @@
   width: 56px;
   padding: 5px 8px;
   font-size: 12px;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm, 3px);
@@ -126,47 +146,6 @@
   margin-left: 4px;
 }
 
-.tab-setting-colors {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.tab-setting-color-option {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  color: var(--text-muted);
-  transition: border-color 0.1s;
-}
-.tab-setting-color-option:hover {
-  border-color: var(--text-muted);
-}
-.tab-setting-color-option.selected {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 1px var(--accent-color);
-}
-.tab-setting-color-option.no-color {
-  background: var(--bg-secondary);
-  border: 2px dashed var(--border-color);
-}
-.tab-setting-color-option.no-color.selected {
-  border-color: var(--accent-color);
-  border-style: solid;
-}
-
-.tab-setting-divider {
-  height: 1px;
-  background: var(--border-color);
-  margin: 2px 0;
-}
-
 .tab-setting-checkbox {
   font-size: 11px;
   color: var(--text-muted);
@@ -186,7 +165,7 @@
   width: 100%;
   padding: 5px 8px;
   font-size: 12px;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm, 3px);
