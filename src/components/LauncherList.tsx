@@ -3,10 +3,11 @@
    CLaunch のリストビューに着想を得た、行単位の表示モード
    ============================================================ */
 import "./LauncherList.css";
-import { useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import type { Tab, GridCell, LauncherItem, GroupItem } from "../types";
-import { isWidgetItem, isGroupItem, isLauncherItem } from "../types";
+import { isWidgetItem, isGroupItem } from "../types";
 import { DEFAULT_GROUP_ICON } from "./LauncherButton";
+import { ContextMenu, type MenuPosition } from "./ContextMenu";
 
 /** アイテムタイプに対応する絵文字 */
 function getTypeEmoji(type: string): string {
@@ -24,57 +25,77 @@ interface LauncherListProps {
   onCellClick: (index: number, cell: GridCell) => void;
   onCellClear: (index: number) => void;
   onCellSwap: (fromIndex: number, toIndex: number) => void;
+  onAddWidget: (index: number) => void;
+  onWidgetSettings?: (index: number) => void;
   onLaunch?: (cell: GridCell) => void;
   onLaunchAdmin?: (cell: GridCell) => void;
   onOpenLocation?: (cell: GridCell) => void;
+  onBrowseFolder?: (path: string) => void;
+  onCellUpdate?: (index: number, item: GridCell) => void;
   onEditItem?: (index: number, item: LauncherItem) => void;
+  onCreateGroup?: (index: number) => void;
   onEditGroup?: (index: number, group: GroupItem) => void;
-  onContextMenu?: (e: React.MouseEvent, index: number, cell: GridCell) => void;
+  onFilePickRegister?: (index: number) => void;
+  onRegisterUrl?: (index: number) => void;
   invalidPaths?: Set<string>;
 }
 
 export function LauncherList({
   tab,
   onCellClick,
+  onCellClear,
   onCellSwap,
+  onAddWidget,
+  onWidgetSettings,
   onLaunch,
+  onLaunchAdmin,
+  onOpenLocation,
+  onBrowseFolder,
+  onCellUpdate,
   onEditItem,
+  onCreateGroup,
   onEditGroup,
+  onFilePickRegister,
+  onRegisterUrl,
   invalidPaths,
 }: LauncherListProps) {
   const dragSource = useRef<number | null>(null);
-  const dragOver = useRef<number | null>(null);
+  const [focusIndex, setFocusIndex] = useState(0);
+  const [menu, setMenu] = useState<{
+    pos: MenuPosition;
+    index: number;
+    cell: GridCell;
+  } | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const total = tab.gridColumns * tab.gridRows;
   const items = tab.items.slice(0, total);
 
-  // 非空セルだけをフィルタリングして表示
-  const nonEmptyCells: { index: number; cell: NonNullable<GridCell> }[] = [];
+  // 全セル（空含む）をインデックス付きで保持
+  const allCells: { index: number; cell: GridCell }[] = [];
   for (let i = 0; i < items.length; i++) {
-    const cell = items[i];
-    if (cell) nonEmptyCells.push({ index: i, cell });
+    allCells.push({ index: i, cell: items[i] ?? null });
   }
+
+  // 非空セルのみ（表示用）
+  const nonEmptyCells = allCells.filter((c) => c.cell !== null) as {
+    index: number;
+    cell: NonNullable<GridCell>;
+  }[];
 
   const handleClick = useCallback(
     (index: number, cell: GridCell) => {
-      if (onLaunch) {
-        onLaunch(cell);
-      } else {
-        onCellClick(index, cell);
-      }
+      onCellClick(index, cell);
     },
-    [onCellClick, onLaunch]
+    [onCellClick],
   );
 
-  const handleDoubleClick = useCallback(
-    (index: number, cell: GridCell) => {
-      if (isLauncherItem(cell)) {
-        onEditItem?.(index, cell);
-      } else if (isGroupItem(cell)) {
-        onEditGroup?.(index, cell);
-      }
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent, index: number, cell: GridCell) => {
+      e.preventDefault();
+      setMenu({ pos: { x: e.clientX, y: e.clientY }, index, cell });
     },
-    [onEditItem, onEditGroup]
+    [],
   );
 
   const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
@@ -82,10 +103,9 @@ export function LauncherList({
     e.dataTransfer.effectAllowed = "move";
   }, []);
 
-  const handleDragOver = useCallback((e: React.DragEvent, index: number) => {
+  const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-    dragOver.current = index;
   }, []);
 
   const handleDrop = useCallback(
@@ -95,27 +115,76 @@ export function LauncherList({
         onCellSwap(dragSource.current, toIndex);
       }
       dragSource.current = null;
-      dragOver.current = null;
     },
-    [onCellSwap]
+    [onCellSwap],
   );
 
-  const handleContextMenu = useCallback(
-    (e: React.MouseEvent, index: number, cell: GridCell) => {
-      e.preventDefault();
-      // コンテキストメニューはグリッドモードと同じイベントを発火
-      handleClick(index, cell);
-    },
-    [handleClick]
-  );
+  // キーボードナビゲーション
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (nonEmptyCells.length === 0) return;
+
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          setFocusIndex((prev) => Math.min(prev + 1, nonEmptyCells.length - 1));
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          setFocusIndex((prev) => Math.max(prev - 1, 0));
+          break;
+        case "Home":
+          e.preventDefault();
+          setFocusIndex(0);
+          break;
+        case "End":
+          e.preventDefault();
+          setFocusIndex(nonEmptyCells.length - 1);
+          break;
+        case "Enter": {
+          e.preventDefault();
+          const focused = nonEmptyCells[focusIndex];
+          if (focused) handleClick(focused.index, focused.cell);
+          break;
+        }
+        case "Delete": {
+          e.preventDefault();
+          const focused = nonEmptyCells[focusIndex];
+          if (focused) {
+            onCellClear(focused.index);
+          }
+          break;
+        }
+      }
+    };
+
+    el.addEventListener("keydown", handleKeyDown);
+    return () => el.removeEventListener("keydown", handleKeyDown);
+  }, [nonEmptyCells, focusIndex, handleClick, onCellClear]);
+
+  // フォーカスが範囲外になったらクランプ
+  useEffect(() => {
+    if (focusIndex >= nonEmptyCells.length && nonEmptyCells.length > 0) {
+      setFocusIndex(nonEmptyCells.length - 1);
+    }
+  }, [nonEmptyCells.length, focusIndex]);
 
   return (
-    <div className="launcher-list">
+    <div className="launcher-list" ref={listRef} tabIndex={0} role="listbox">
       {nonEmptyCells.length === 0 && (
-        <div className="list-empty">アイテムが登録されていません</div>
+        <div
+          className="list-empty"
+          onContextMenu={(e) => handleContextMenu(e, 0, null)}
+        >
+          アイテムが登録されていません（右クリックで追加）
+        </div>
       )}
-      {nonEmptyCells.map(({ index, cell }) => {
-        const isInvalid = cell && "id" in cell && invalidPaths?.has(cell.id);
+      {nonEmptyCells.map(({ index, cell }, displayIdx) => {
+        const isInvalid = "id" in cell && invalidPaths?.has(cell.id);
+        const isFocused = displayIdx === focusIndex;
 
         let icon: React.ReactNode;
         let label: string;
@@ -148,13 +217,20 @@ export function LauncherList({
         return (
           <div
             key={index}
-            className={`list-row${isInvalid ? " invalid" : ""}`}
+            className={`list-row${isInvalid ? " invalid" : ""}${isFocused ? " focused" : ""}`}
+            role="option"
+            aria-selected={isFocused}
             draggable
-            onClick={() => handleClick(index, cell)}
-            onDoubleClick={() => handleDoubleClick(index, cell)}
-            onContextMenu={(e) => handleContextMenu(e, index, cell)}
+            onClick={() => {
+              setFocusIndex(displayIdx);
+              handleClick(index, cell);
+            }}
+            onContextMenu={(e) => {
+              setFocusIndex(displayIdx);
+              handleContextMenu(e, index, cell);
+            }}
             onDragStart={(e) => handleDragStart(e, index)}
-            onDragOver={(e) => handleDragOver(e, index)}
+            onDragOver={(e) => handleDragOver(e)}
             onDrop={(e) => handleDrop(e, index)}
           >
             <div className="list-row-icon-area">{icon}</div>
@@ -166,10 +242,92 @@ export function LauncherList({
                 </span>
               )}
             </div>
-            {isInvalid && <span className="list-row-warning" title="パスが見つかりません">⚠</span>}
+            {isInvalid && (
+              <span className="list-row-warning" title="パスが見つかりません">
+                ⚠
+              </span>
+            )}
           </div>
         );
       })}
+
+      {menu && (
+        <ContextMenu
+          pos={menu.pos}
+          cell={menu.cell}
+          onClose={() => setMenu(null)}
+          onDelete={() => {
+            onCellClear(menu.index);
+            setMenu(null);
+          }}
+          onAddWidget={() => {
+            onAddWidget(menu.index);
+            setMenu(null);
+          }}
+          onWidgetSettings={() => {
+            onWidgetSettings?.(menu.index);
+            setMenu(null);
+          }}
+          onLaunch={onLaunch}
+          onLaunchAdmin={onLaunchAdmin}
+          onOpenLocation={onOpenLocation}
+          onBrowseFolder={onBrowseFolder}
+          onToggleFolderAction={
+            onCellUpdate
+              ? (item: LauncherItem) => {
+                  const toggled = {
+                    ...item,
+                    folderAction:
+                      item.folderAction === "browse"
+                        ? ("open" as const)
+                        : ("browse" as const),
+                  };
+                  onCellUpdate(menu.index, toggled);
+                }
+              : undefined
+          }
+          onEditItem={
+            onEditItem
+              ? (item: LauncherItem) => {
+                  onEditItem(menu.index, item);
+                  setMenu(null);
+                }
+              : undefined
+          }
+          onCreateGroup={
+            onCreateGroup
+              ? () => {
+                  onCreateGroup(menu.index);
+                  setMenu(null);
+                }
+              : undefined
+          }
+          onEditGroup={
+            onEditGroup
+              ? (group: GroupItem) => {
+                  onEditGroup(menu.index, group);
+                  setMenu(null);
+                }
+              : undefined
+          }
+          onFilePickRegister={
+            onFilePickRegister
+              ? () => {
+                  onFilePickRegister(menu.index);
+                  setMenu(null);
+                }
+              : undefined
+          }
+          onRegisterUrl={
+            onRegisterUrl
+              ? () => {
+                  onRegisterUrl(menu.index);
+                  setMenu(null);
+                }
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 }

@@ -585,11 +585,18 @@ function App() {
           onCellClick={handleCellClick}
           onCellClear={handleCellClear}
           onCellSwap={handleCellSwap}
+          onAddWidget={openWidgetSelectWindow}
+          onWidgetSettings={handleWidgetSettings}
           onLaunch={launcher.launch}
           onLaunchAdmin={launcher.launchAdmin}
           onOpenLocation={launcher.openLocation}
+          onBrowseFolder={openFolderBrowser}
+          onCellUpdate={tabManager.handleCellUpdate}
           onEditItem={handleEditItem}
+          onCreateGroup={handleCreateGroup}
           onEditGroup={handleEditGroup}
+          onFilePickRegister={handleFilePickRegister}
+          onRegisterUrl={handleRegisterUrl}
           invalidPaths={invalidPaths}
         />
       ) : activeTab ? (
