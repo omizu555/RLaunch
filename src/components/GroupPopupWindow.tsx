@@ -212,26 +212,6 @@ export function GroupPopupWindow() {
     return () => { unlistenInit.then((fn) => fn()); };
   }, []);
 
-  // ── メイングリッドからのドラッグ受信 ──
-  useEffect(() => {
-    const unlistenDrag = listen<{ item: GridCell }>("drag-item-to-group", (event) => {
-      const g = groupRef.current;
-      if (!g) return;
-      const item = event.payload.item;
-      if (!item) return;
-      const totalSlots = g.gridColumns * g.gridRows;
-      const items = g.items;
-      // 最初の空きセルを探す
-      let targetIndex = -1;
-      for (let i = 0; i < totalSlots; i++) {
-        if (!items[i]) { targetIndex = i; break; }
-      }
-      if (targetIndex === -1) return; // 空きなし
-      updateCell(targetIndex, item);
-    });
-    return () => { unlistenDrag.then((fn) => fn()); };
-  }, [updateCell]);
-
   // ── ウィンドウ移動検知でフォーカス喪失クローズを抑制 ──
   useFocusLossAutoClose("group-popup-closed");
 

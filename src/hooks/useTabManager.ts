@@ -2,7 +2,8 @@
    useTabManager - タブ & グリッドセル管理フック
    ============================================================ */
 import { useState, useCallback } from "react";
-import type { Tab, AppSettings, GridCell } from "../types";
+import type { Tab, AppSettings, GridCell, GroupItem } from "../types";
+import { isGroupItem } from "../types";
 import {
   getTabs,
   addTab,
@@ -156,10 +157,44 @@ export function useTabManager(onNotify: (msg: string) => void) {
 
   const handleCellSwap = useCallback(
     async (fromIndex: number, toIndex: number) => {
+      // ドロップ先がグループ → アイテムをグループ内に移動
+      const tab = tabs.find((t) => t.id === activeTabId);
+      if (tab) {
+        const sourceCell = tab.items[fromIndex];
+        const targetCell = tab.items[toIndex];
+        if (sourceCell && !isGroupItem(sourceCell) && isGroupItem(targetCell)) {
+          const group = targetCell as GroupItem;
+          const totalSlots = group.gridColumns * group.gridRows;
+          const items = group.items ?? [];
+          // 空きセルを探す
+          let emptyIndex = -1;
+          for (let i = 0; i < totalSlots; i++) {
+            if (!items[i]) { emptyIndex = i; break; }
+          }
+          if (emptyIndex === -1) {
+            onNotify("グループに空きがありません");
+            return;
+          }
+          const newGroupItems = [...items];
+          while (newGroupItems.length <= emptyIndex) newGroupItems.push(null);
+          newGroupItems[emptyIndex] = sourceCell;
+          const updatedGroup: GroupItem = {
+            ...group,
+            items: newGroupItems,
+            updatedAt: new Date().toISOString(),
+          };
+          // グループを更新 + 元セルをクリア
+          let newTabs = await setGridCell(activeTabId, toIndex, updatedGroup);
+          newTabs = await clearGridCell(activeTabId, fromIndex);
+          setTabs(newTabs);
+          onNotify(`「${sourceCell.label ?? "アイテム"}」をグループに移動しました`);
+          return;
+        }
+      }
       const newTabs = await swapGridCells(activeTabId, fromIndex, toIndex);
       setTabs(newTabs);
     },
-    [activeTabId]
+    [activeTabId, tabs, onNotify]
   );
 
   /** Tauri ネイティブ D&D でアイテム登録 (P-07: 複数ファイル一括対応) */

@@ -562,17 +562,6 @@ function App() {
     [openWidgetSelectWindow],
   );
 
-  // ── メイングリッドからウィンドウ外へのドラッグ → グループポップアップ転送 ──
-  const handleDragOutside = useCallback(
-    (_sourceIndex: number, cell: GridCell) => {
-      if (!groupPopupRef.current) return;
-      // グループポップアップが開いている場合、アイテムをグループへコピー
-      if (!cell || cell.type === "group") return; // グループ自体は転送しない
-      emit("drag-item-to-group", { item: cell });
-    },
-    [],
-  );
-
   // ── グローバルホットキー ──
   useHotkey(settings.hotkey, settings.windowPosition, pinned);
 
@@ -766,7 +755,6 @@ function App() {
           onRegisterUrl={handleRegisterUrl}
           onDragStateChange={setIsDraggingItem}
           invalidPaths={invalidPaths}
-          onDragOutside={handleDragOutside}
         />
       )}
 

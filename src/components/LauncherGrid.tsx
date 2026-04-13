@@ -39,8 +39,6 @@ interface LauncherGridProps {
   onDragStateChange?: (isDragging: boolean) => void;
   /** P-38: 無効パスのアイテムIDセット */
   invalidPaths?: Set<string>;
-  /** メイングリッドからドラッグしてウィンドウ外でリリース */
-  onDragOutside?: (sourceIndex: number, cell: GridCell) => void;
 }
 
 /** ドラッグ開始とみなす移動距離しきい値 (px) */
@@ -70,7 +68,6 @@ export function LauncherGrid({
   onRegisterUrl,
   onDragStateChange,
   invalidPaths,
-  onDragOutside,
 }: LauncherGridProps) {
   const [menu, setMenu] = useState<{ pos: MenuPosition; index: number; cell: GridCell } | null>(null);
 
@@ -139,8 +136,6 @@ export function LauncherGrid({
   const justDragged = useRef(false);
   const onCellSwapRef = useRef(onCellSwap);
   onCellSwapRef.current = onCellSwap;
-  const onDragOutsideRef = useRef(onDragOutside);
-  onDragOutsideRef.current = onDragOutside;
 
   const [dragSource, setDragSource] = useState<number | null>(null);
   const [dragTarget, setDragTarget] = useState<number | null>(null);
@@ -193,12 +188,6 @@ export function LauncherGrid({
         const target = pointerTargetRef.current;
         if (target !== null && target !== drag.sourceIndex) {
           onCellSwapRef.current(drag.sourceIndex, target);
-        } else if (target === null) {
-          // ウィンドウ外でリリース → グループポップアップ等への転送
-          const sourceCell = tab.items[drag.sourceIndex] ?? null;
-          if (sourceCell) {
-            onDragOutsideRef.current?.(drag.sourceIndex, sourceCell);
-          }
         }
         justDragged.current = true;
         requestAnimationFrame(() => { justDragged.current = false; });
