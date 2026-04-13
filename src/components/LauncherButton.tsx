@@ -35,6 +35,7 @@ interface LauncherButtonProps {
   onContextMenu: (e: React.MouseEvent, index: number, cell: GridCell) => void;
   onClick: (index: number, cell: GridCell) => void;
   onPointerDown?: (e: React.PointerEvent, index: number) => void;
+  onDoubleClick?: (index: number, cell: GridCell) => void;
 }
 
 export function LauncherButton({
@@ -49,6 +50,7 @@ export function LauncherButton({
   onContextMenu,
   onClick,
   onPointerDown,
+  onDoubleClick,
 }: LauncherButtonProps) {
 
   const compactClass = compact ? " compact" : "";
@@ -62,6 +64,7 @@ export function LauncherButton({
         role="gridcell"
         aria-label="空きスロット"
         onContextMenu={(e) => onContextMenu(e, index, null)}
+        onDoubleClick={() => onDoubleClick?.(index, null)}
       />
     );
   }

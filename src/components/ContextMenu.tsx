@@ -27,6 +27,8 @@ interface ContextMenuProps {
   onEditGroup?: (group: GroupItem) => void;
   /** P-10: ファイル選択ダイアログでの登録 */
   onFilePickRegister?: () => void;
+  /** フォルダ選択ダイアログでの登録 */
+  onFolderPickRegister?: () => void;
   /** P-08: URL手動登録 */
   onRegisterUrl?: () => void;
 }
@@ -47,6 +49,7 @@ export function ContextMenu({
   onCreateGroup,
   onEditGroup,
   onFilePickRegister,
+  onFolderPickRegister,
   onRegisterUrl,
 }: ContextMenuProps) {
   // 空ボタン
@@ -59,6 +62,11 @@ export function ContextMenu({
         {onFilePickRegister && (
           <div className="context-menu-item" onClick={() => { onFilePickRegister(); onClose(); }}>
             📁 ファイルを選択して追加
+          </div>
+        )}
+        {onFolderPickRegister && (
+          <div className="context-menu-item" onClick={() => { onFolderPickRegister(); onClose(); }}>
+            📂 フォルダを選択して追加
           </div>
         )}
         {onRegisterUrl && (

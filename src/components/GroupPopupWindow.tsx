@@ -212,6 +212,26 @@ export function GroupPopupWindow() {
     return () => { unlistenInit.then((fn) => fn()); };
   }, []);
 
+  // ── メイングリッドからのドラッグ受信 ──
+  useEffect(() => {
+    const unlistenDrag = listen<{ item: GridCell }>("drag-item-to-group", (event) => {
+      const g = groupRef.current;
+      if (!g) return;
+      const item = event.payload.item;
+      if (!item) return;
+      const totalSlots = g.gridColumns * g.gridRows;
+      const items = g.items;
+      // 最初の空きセルを探す
+      let targetIndex = -1;
+      for (let i = 0; i < totalSlots; i++) {
+        if (!items[i]) { targetIndex = i; break; }
+      }
+      if (targetIndex === -1) return; // 空きなし
+      updateCell(targetIndex, item);
+    });
+    return () => { unlistenDrag.then((fn) => fn()); };
+  }, [updateCell]);
+
   // ── ウィンドウ移動検知でフォーカス喪失クローズを抑制 ──
   useFocusLossAutoClose("group-popup-closed");
 
@@ -325,6 +345,26 @@ export function GroupPopupWindow() {
         }
       } catch (e) {
         console.error("File dialog error:", e);
+      }
+    },
+    [registerItem],
+  );
+
+  // ── フォルダ選択ダイアログで登録 ──
+  const handleFolderPickRegister = useCallback(
+    async (cellIndex: number) => {
+      setContext(null);
+      try {
+        const selected = await dialogOpen({
+          directory: true,
+          multiple: false,
+          title: "登録するフォルダを選択",
+        });
+        if (selected) {
+          await registerItem(selected as string, cellIndex);
+        }
+      } catch (e) {
+        console.error("Folder dialog error:", e);
       }
     },
     [registerItem],
@@ -539,6 +579,7 @@ export function GroupPopupWindow() {
           context={context}
           onClose={() => setContext(null)}
           onFilePickRegister={handleFilePickRegister}
+          onFolderPickRegister={handleFolderPickRegister}
           onRegisterUrl={handleRegisterUrl}
           onAddWidget={handleAddWidget}
           onRemove={handleRemoveFromGroup}
@@ -572,6 +613,7 @@ function GroupPopupContextMenu({
   context,
   onClose,
   onFilePickRegister,
+  onFolderPickRegister,
   onRegisterUrl,
   onAddWidget,
   onRemove,
@@ -587,6 +629,7 @@ function GroupPopupContextMenu({
   context: ContextState;
   onClose: () => void;
   onFilePickRegister: (index: number) => void;
+  onFolderPickRegister: (index: number) => void;
   onRegisterUrl: (index: number) => void;
   onAddWidget: (index: number) => void;
   onRemove: (index: number, confirmMsg?: string) => void;
@@ -614,6 +657,9 @@ function GroupPopupContextMenu({
           </div>
           <div className="context-menu-item" onClick={(e) => { e.stopPropagation(); onFilePickRegister(index); }}>
             📁 ファイルを選択して追加
+          </div>
+          <div className="context-menu-item" onClick={(e) => { e.stopPropagation(); onFolderPickRegister(index); }}>
+            📂 フォルダを選択して追加
           </div>
           <div className="context-menu-item" onClick={(e) => { e.stopPropagation(); onRegisterUrl(index); }}>
             🌐 URLを登録

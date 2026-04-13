@@ -480,6 +480,31 @@ function App() {
     [tabManager, showNotification],
   );
 
+  // ── フォルダ選択ダイアログでの登録 ──
+  const handleFolderPickRegister = useCallback(
+    async (index: number) => {
+      try {
+        const { open: dialogOpen } = await import("@tauri-apps/plugin-dialog");
+        const selected = await dialogOpen({
+          directory: true,
+          multiple: false,
+          title: "登録するフォルダを選択",
+        });
+        if (selected) {
+          const { createLauncherItemFromPath } = await import("./utils/fileRegistration");
+          const item = await createLauncherItemFromPath(selected as string);
+          if (item) {
+            tabManager.handleCellUpdate(index, item);
+            showNotification(`「${item.label}」を登録しました`);
+          }
+        }
+      } catch (e) {
+        console.error("Folder dialog error:", e);
+      }
+    },
+    [tabManager, showNotification],
+  );
+
   // ── P-08: URL手動登録 ──
   const handleRegisterUrl = useCallback(
     (index: number) => {
@@ -535,6 +560,17 @@ function App() {
       openWidgetSelectWindow(index);
     },
     [openWidgetSelectWindow],
+  );
+
+  // ── メイングリッドからウィンドウ外へのドラッグ → グループポップアップ転送 ──
+  const handleDragOutside = useCallback(
+    (_sourceIndex: number, cell: GridCell) => {
+      if (!groupPopupRef.current) return;
+      // グループポップアップが開いている場合、アイテムをグループへコピー
+      if (!cell || cell.type === "group") return; // グループ自体は転送しない
+      emit("drag-item-to-group", { item: cell });
+    },
+    [],
   );
 
   // ── グローバルホットキー ──
@@ -726,9 +762,11 @@ function App() {
           onEditGroup={handleEditGroup}
           externalDragOverIndex={dragOverIndex}
           onFilePickRegister={handleFilePickRegister}
+          onFolderPickRegister={handleFolderPickRegister}
           onRegisterUrl={handleRegisterUrl}
           onDragStateChange={setIsDraggingItem}
           invalidPaths={invalidPaths}
+          onDragOutside={handleDragOutside}
         />
       )}
 

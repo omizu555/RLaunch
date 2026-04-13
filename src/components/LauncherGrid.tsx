@@ -31,12 +31,16 @@ interface LauncherGridProps {
   externalDragOverIndex?: number | null;
   /** P-10: ファイル選択ダイアログ登録 */
   onFilePickRegister?: (index: number) => void;
+  /** フォルダ選択ダイアログ登録 */
+  onFolderPickRegister?: (index: number) => void;
   /** P-08: URL登録 */
   onRegisterUrl?: (index: number) => void;
   /** P-12: ドラッグ中フラグ（タブ切替用） */
   onDragStateChange?: (isDragging: boolean) => void;
   /** P-38: 無効パスのアイテムIDセット */
   invalidPaths?: Set<string>;
+  /** メイングリッドからドラッグしてウィンドウ外でリリース */
+  onDragOutside?: (sourceIndex: number, cell: GridCell) => void;
 }
 
 /** ドラッグ開始とみなす移動距離しきい値 (px) */
@@ -62,9 +66,11 @@ export function LauncherGrid({
   onEditGroup,
   externalDragOverIndex,
   onFilePickRegister,
+  onFolderPickRegister,
   onRegisterUrl,
   onDragStateChange,
   invalidPaths,
+  onDragOutside,
 }: LauncherGridProps) {
   const [menu, setMenu] = useState<{ pos: MenuPosition; index: number; cell: GridCell } | null>(null);
 
@@ -133,6 +139,8 @@ export function LauncherGrid({
   const justDragged = useRef(false);
   const onCellSwapRef = useRef(onCellSwap);
   onCellSwapRef.current = onCellSwap;
+  const onDragOutsideRef = useRef(onDragOutside);
+  onDragOutsideRef.current = onDragOutside;
 
   const [dragSource, setDragSource] = useState<number | null>(null);
   const [dragTarget, setDragTarget] = useState<number | null>(null);
@@ -185,6 +193,12 @@ export function LauncherGrid({
         const target = pointerTargetRef.current;
         if (target !== null && target !== drag.sourceIndex) {
           onCellSwapRef.current(drag.sourceIndex, target);
+        } else if (target === null) {
+          // ウィンドウ外でリリース → グループポップアップ等への転送
+          const sourceCell = tab.items[drag.sourceIndex] ?? null;
+          if (sourceCell) {
+            onDragOutsideRef.current?.(drag.sourceIndex, sourceCell);
+          }
         }
         justDragged.current = true;
         requestAnimationFrame(() => { justDragged.current = false; });
@@ -217,6 +231,16 @@ export function LauncherGrid({
       onCellClick(index, cell);
     },
     [onCellClick],
+  );
+
+  /** 空セルダブルクリック → ファイル選択ダイアログ */
+  const handleCellDoubleClick = useCallback(
+    (index: number, cell: GridCell) => {
+      if (!cell && onFilePickRegister) {
+        onFilePickRegister(index);
+      }
+    },
+    [onFilePickRegister],
   );
 
   const displayDragOver = externalDragOverIndex ?? dragTarget;
@@ -296,6 +320,7 @@ export function LauncherGrid({
                 invalidPath={!!(cell && invalidPaths?.has(cell.id))}
                 onContextMenu={handleContextMenu}
                 onClick={handleCellClick}
+                onDoubleClick={handleCellDoubleClick}
                 onPointerDown={handleCellPointerDown}
               />
             </div>
@@ -351,6 +376,12 @@ export function LauncherGrid({
           onFilePickRegister={onFilePickRegister ? () => {
             if (menu) {
               onFilePickRegister(menu.index);
+              setMenu(null);
+            }
+          } : undefined}
+          onFolderPickRegister={onFolderPickRegister ? () => {
+            if (menu) {
+              onFolderPickRegister(menu.index);
               setMenu(null);
             }
           } : undefined}
