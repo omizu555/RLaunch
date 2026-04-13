@@ -32,6 +32,8 @@ import { applyWindowEffect } from "./utils/applyWindowEffect";
 import { importData } from "./stores/launcherStore";
 import { TabSettingsDialog } from "./components/TabSettingsDialog";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { listen, emit } from "@tauri-apps/api/event";
+import type { GroupPopupActionPayload } from "./components/GroupPopupWindow";
 
 function App() {
   const [showSearch, setShowSearch] = useState(false);
@@ -346,6 +348,8 @@ function App() {
   );
 
 
+  // ── ウィジェット操作のターゲット管理（メイングリッド or グループポップアップ） ──
+  const widgetTargetRef = useRef<{ type: "main" | "group"; cellIndex: number }>({ type: "main", cellIndex: 0 });
 
   const widgetManager = useWidgetManager({
     activeTabId,
@@ -353,16 +357,86 @@ function App() {
     onNotify: showNotification,
   });
 
+  /** グループ内のウィジェット操作ヘルパー: グループのセルを更新して親に反映 */
+  const updateGroupCell = useCallback(
+    (cellIndex: number, item: GridCell) => {
+      const pending = groupPopupRef.current;
+      if (!pending || !activeTab) return;
+      const groupCell = activeTab.items[pending.index];
+      if (!groupCell || groupCell.type !== "group") return;
+      const group = groupCell as GroupItem;
+      const newItems = [...group.items];
+      while (newItems.length <= cellIndex) newItems.push(null);
+      newItems[cellIndex] = item;
+      const updated: GroupItem = { ...group, items: newItems, updatedAt: new Date().toISOString() };
+      tabManager.handleCellUpdate(pending.index, updated);
+      // グループポップアップに最新データを送信
+      emit("group-popup-init", {
+        group: updated,
+        parentViewMode: activeTab.viewMode ?? settings.viewMode ?? "grid",
+        parentListColumns: activeTab.listColumns ?? settings.listColumns ?? 1,
+      });
+    },
+    [activeTab, settings, tabManager],
+  );
+
   // ── ウィジェット選択ウィンドウ ──
   const { openWidgetSelectWindow } = useWidgetSelectWindow({
     settings,
-    onSelect: widgetManager.handleWidgetSelect,
+    onSelect: useCallback((widgetType: import("./types").WidgetType, index: number) => {
+      if (widgetTargetRef.current.type === "group") {
+        // グループポップアップ向け: ウィジェットを作成してグループに配置
+        (async () => {
+          const { getWidgetManifest, buildDefaultConfig } = await import("./utils/widgetLoader");
+          const { getDefaultWidgetConfig, getDefaultUpdateInterval, WIDGET_LABELS, isBuiltinWidget } = await import("./types");
+          const manifest = await getWidgetManifest(widgetType);
+          let config: Record<string, unknown>;
+          let updateInterval: number;
+          let label: string;
+          if (manifest) {
+            config = buildDefaultConfig(manifest);
+            updateInterval = manifest.updateInterval;
+            label = manifest.label;
+            if (isBuiltinWidget(widgetType)) {
+              config = { ...getDefaultWidgetConfig(widgetType), ...config };
+            }
+          } else {
+            config = getDefaultWidgetConfig(widgetType) as unknown as Record<string, unknown>;
+            updateInterval = getDefaultUpdateInterval(widgetType);
+            label = WIDGET_LABELS[widgetType] ?? widgetType;
+          }
+          const widget: WidgetItem = {
+            id: crypto.randomUUID(),
+            type: "widget",
+            widgetType,
+            label,
+            config,
+            updateInterval,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          updateGroupCell(widgetTargetRef.current.cellIndex, widget);
+          showNotification(`「${label}」をグループに配置しました`);
+          widgetTargetRef.current = { type: "main", cellIndex: 0 };
+        })();
+      } else {
+        widgetManager.handleWidgetSelect(widgetType, index);
+      }
+    }, [widgetManager, updateGroupCell, showNotification]),
   });
 
   // ── ウィジェット設定ウィンドウ ──
   const { openWidgetSettingsWindow } = useWidgetSettingsWindow({
     settings,
-    onSave: widgetManager.handleWidgetSettingsSave,
+    onSave: useCallback((widget: WidgetItem, index: number) => {
+      if (widgetTargetRef.current.type === "group") {
+        updateGroupCell(widgetTargetRef.current.cellIndex, widget);
+        showNotification("グループ内ウィジェット設定を保存しました");
+        widgetTargetRef.current = { type: "main", cellIndex: 0 };
+      } else {
+        widgetManager.handleWidgetSettingsSave(widget, index);
+      }
+    }, [widgetManager, updateGroupCell, showNotification]),
   });
 
   /** ウィジェット設定ボタン押下 → ウィンドウを開く */
@@ -370,7 +444,8 @@ function App() {
     (index: number) => {
       const item = activeTab?.items[index];
       if (item?.type === "widget") {
-        openWidgetSettingsWindow(item as WidgetItem, index);  // type narrowing through isWidgetItem not applicable here
+        widgetTargetRef.current = { type: "main", cellIndex: index };
+        openWidgetSettingsWindow(item as WidgetItem, index);
       }
     },
     [activeTab, openWidgetSettingsWindow],
@@ -427,6 +502,39 @@ function App() {
       showNotification(`「${label}」を登録しました`);
     },
     [tabManager, showNotification],
+  );
+
+  // ── グループポップアップからのアクション要求ハンドリング ──
+  useEffect(() => {
+    const unlistenAction = listen<GroupPopupActionPayload>("group-popup-action", (event) => {
+      const { action, cellIndex, widget, path } = event.payload;
+      switch (action) {
+        case "add-widget":
+        case "change-widget":
+          widgetTargetRef.current = { type: "group", cellIndex };
+          openWidgetSelectWindow(cellIndex);
+          break;
+        case "widget-settings":
+          if (widget) {
+            widgetTargetRef.current = { type: "group", cellIndex };
+            openWidgetSettingsWindow(widget, cellIndex);
+          }
+          break;
+        case "browse-folder":
+          if (path) openFolderBrowser(path);
+          break;
+      }
+    });
+    return () => { unlistenAction.then((fn) => fn()); };
+  }, [openWidgetSelectWindow, openWidgetSettingsWindow, openFolderBrowser]);
+
+  // ── メイングリッドのウィジェット操作時はターゲットをリセット ──
+  const handleMainWidgetSelect = useCallback(
+    (index: number) => {
+      widgetTargetRef.current = { type: "main", cellIndex: index };
+      openWidgetSelectWindow(index);
+    },
+    [openWidgetSelectWindow],
   );
 
   // ── グローバルホットキー ──
@@ -606,7 +714,7 @@ function App() {
           onCellClick={handleCellClick}
           onCellClear={handleCellClear}
           onCellSwap={handleCellSwap}
-          onAddWidget={openWidgetSelectWindow}
+          onAddWidget={handleMainWidgetSelect}
           onWidgetSettings={handleWidgetSettings}
           onLaunch={launcher.launch}
           onLaunchAdmin={launcher.launchAdmin}
