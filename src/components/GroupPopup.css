@@ -100,30 +100,3 @@
 .group-popup-compact .btn {
   height: var(--compact-row-height, 32px);
 }
-
-/* ── 右クリックコンテキストメニュー ── */
-.group-popup-context-menu {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 999;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 2px 0;
-  font-size: 11px;
-  min-width: 140px;
-  box-shadow: 0 4px 12px var(--shadow-color);
-}
-
-.group-popup-context-item {
-  padding: 4px 10px;
-  cursor: pointer;
-  color: var(--text-primary);
-}
-.group-popup-context-item:hover {
-  background: var(--bg-hover);
-}
-.group-popup-context-item.muted {
-  color: var(--text-muted);
-}

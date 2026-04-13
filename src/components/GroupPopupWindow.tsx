@@ -6,9 +6,8 @@
    機能:
    - アイテムクリックで起動
    - ネイティブファイル D&D でアイテム登録（複数ファイル対応）
-   - 空セル右クリック → ファイル選択 / URL登録 / ウィジェット配置
+   - 空セル右クリック → ファイル選択 / URL登録
    - 既存アイテム右クリック → 起動 / 管理者起動 / 編集 / 除去 等
-   - ウィジェット右クリック → 設定 / 変更 / 解除
    - LauncherButton コンポーネントで描画（メイングリッドと統一）
    - ItemEditDialog でアイテム編集
 
@@ -18,15 +17,15 @@
    3. アイテムクリック → invoke("launch_app") + "group-popup-launch" → 閉じ
    4. グループ変更 → "group-popup-update" (updated GroupItem)
    5. ウィンドウ閉じ → "group-popup-closed"
-   6. ウィジェット操作 → "group-popup-action" (親に委任)
+   6. フォルダ参照 → "group-popup-action" (親に委任)
    ============================================================ */
 import { useState, useCallback, useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { emit, listen } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { open as dialogOpen } from "@tauri-apps/plugin-dialog";
-import type { GroupItem, GridCell, LauncherItem, WidgetItem } from "../types";
-import { isLauncherItem, isWidgetItem } from "../types";
+import type { GroupItem, GridCell, LauncherItem } from "../types";
+import { isLauncherItem } from "../types";
 import { createLauncherItemFromPath } from "../utils/fileRegistration";
 import { buildCellArray } from "../utils/domHelpers";
 import { useNativeDrop } from "../hooks/useNativeDrop";
@@ -49,9 +48,8 @@ export interface GroupPopupUpdatePayload {
 
 /** 親ウィンドウへのアクション要求 */
 export interface GroupPopupActionPayload {
-  action: "add-widget" | "change-widget" | "widget-settings" | "browse-folder";
+  action: "browse-folder";
   cellIndex: number;
-  widget?: WidgetItem;
   path?: string;
 }
 
@@ -330,26 +328,6 @@ export function GroupPopupWindow() {
     [registerItem],
   );
 
-  // ── フォルダ選択ダイアログで登録 ──
-  const handleFolderPickRegister = useCallback(
-    async (cellIndex: number) => {
-      setContext(null);
-      try {
-        const selected = await dialogOpen({
-          directory: true,
-          multiple: false,
-          title: "登録するフォルダを選択",
-        });
-        if (selected) {
-          await registerItem(selected as string, cellIndex);
-        }
-      } catch (e) {
-        console.error("Folder dialog error:", e);
-      }
-    },
-    [registerItem],
-  );
-
   // ── URL登録 ──
   const handleRegisterUrl = useCallback(
     (cellIndex: number) => {
@@ -370,31 +348,6 @@ export function GroupPopupWindow() {
       updateCell(cellIndex, item);
     },
     [updateCell],
-  );
-
-  // ── ウィジェット操作（親に委任） ──
-  const handleAddWidget = useCallback(
-    (cellIndex: number) => {
-      setContext(null);
-      emit("group-popup-action", { action: "add-widget", cellIndex } as GroupPopupActionPayload);
-    },
-    [],
-  );
-
-  const handleChangeWidget = useCallback(
-    (cellIndex: number) => {
-      setContext(null);
-      emit("group-popup-action", { action: "change-widget", cellIndex } as GroupPopupActionPayload);
-    },
-    [],
-  );
-
-  const handleWidgetSettings = useCallback(
-    (cellIndex: number, widget: WidgetItem) => {
-      setContext(null);
-      emit("group-popup-action", { action: "widget-settings", cellIndex, widget } as GroupPopupActionPayload);
-    },
-    [],
   );
 
   // ── 起動操作 ──
@@ -438,27 +391,6 @@ export function GroupPopupWindow() {
       }
     },
     [],
-  );
-
-  const handleBrowseFolder = useCallback(
-    (path: string) => {
-      setContext(null);
-      emit("group-popup-action", { action: "browse-folder", cellIndex: 0, path } as GroupPopupActionPayload);
-    },
-    [],
-  );
-
-  const handleToggleFolderAction = useCallback(
-    (index: number, item: LauncherItem) => {
-      setContext(null);
-      const toggled: LauncherItem = {
-        ...item,
-        folderAction: item.folderAction === "browse" ? "open" : "browse",
-        updatedAt: new Date().toISOString(),
-      };
-      updateCell(index, toggled);
-    },
-    [updateCell],
   );
 
   // ── アイテム編集 ──
@@ -559,18 +491,12 @@ export function GroupPopupWindow() {
           context={context}
           onClose={() => setContext(null)}
           onFilePickRegister={handleFilePickRegister}
-          onFolderPickRegister={handleFolderPickRegister}
           onRegisterUrl={handleRegisterUrl}
-          onAddWidget={handleAddWidget}
           onRemove={handleRemoveFromGroup}
           onLaunch={handleLaunch}
           onLaunchAdmin={handleLaunchAdmin}
           onOpenLocation={handleOpenLocation}
-          onBrowseFolder={handleBrowseFolder}
-          onToggleFolderAction={handleToggleFolderAction}
           onEditItem={handleEditItem}
-          onChangeWidget={handleChangeWidget}
-          onWidgetSettings={handleWidgetSettings}
         />
       )}
 
@@ -593,34 +519,22 @@ function GroupPopupContextMenu({
   context,
   onClose,
   onFilePickRegister,
-  onFolderPickRegister,
   onRegisterUrl,
-  onAddWidget,
   onRemove,
   onLaunch,
   onLaunchAdmin,
   onOpenLocation,
-  onBrowseFolder,
-  onToggleFolderAction,
   onEditItem,
-  onChangeWidget,
-  onWidgetSettings,
 }: {
   context: ContextState;
   onClose: () => void;
   onFilePickRegister: (index: number) => void;
-  onFolderPickRegister: (index: number) => void;
   onRegisterUrl: (index: number) => void;
-  onAddWidget: (index: number) => void;
   onRemove: (index: number, confirmMsg?: string) => void;
   onLaunch: (cell: GridCell) => void;
   onLaunchAdmin: (cell: GridCell) => void;
   onOpenLocation: (cell: GridCell) => void;
-  onBrowseFolder: (path: string) => void;
-  onToggleFolderAction: (index: number, item: LauncherItem) => void;
   onEditItem: (index: number, item: LauncherItem) => void;
-  onChangeWidget: (index: number) => void;
-  onWidgetSettings: (index: number, widget: WidgetItem) => void;
 }) {
   const { index, cell, pos } = context;
   const adjustedX = Math.min(pos.x, window.innerWidth - 200);
@@ -638,36 +552,8 @@ function GroupPopupContextMenu({
           <div className="context-menu-item" onClick={(e) => { e.stopPropagation(); onFilePickRegister(index); }}>
             📁 ファイルを選択して追加
           </div>
-          <div className="context-menu-item" onClick={(e) => { e.stopPropagation(); onFolderPickRegister(index); }}>
-            📂 フォルダを選択して追加
-          </div>
           <div className="context-menu-item" onClick={(e) => { e.stopPropagation(); onRegisterUrl(index); }}>
             🌐 URLを登録
-          </div>
-          <div className="context-menu-separator" />
-          <div className="context-menu-item" onClick={(e) => { e.stopPropagation(); onAddWidget(index); }}>
-            🕐 ウィジェットを配置
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  // ウィジェットメニュー
-  if (isWidgetItem(cell)) {
-    return (
-      <>
-        <div className="context-menu-overlay" onClick={onClose} onContextMenu={(e) => { e.preventDefault(); onClose(); }} />
-        <div className="context-menu" role="menu" style={{ left: adjustedX, top: adjustedY }}>
-          <div className="context-menu-item" onClick={(e) => { e.stopPropagation(); onWidgetSettings(index, cell); }}>
-            ⚙ ウィジェット設定
-          </div>
-          <div className="context-menu-item" onClick={(e) => { e.stopPropagation(); onChangeWidget(index); }}>
-            🔄 ウィジェットを変更
-          </div>
-          <div className="context-menu-separator" />
-          <div className="context-menu-item danger" onClick={(e) => { e.stopPropagation(); onRemove(index); }}>
-            🗑 ウィジェットを解除
           </div>
         </div>
       </>
@@ -676,8 +562,6 @@ function GroupPopupContextMenu({
 
   // ランチャーアイテムメニュー
   if (isLauncherItem(cell)) {
-    const isFolder = cell.type === "folder";
-    const folderAction = cell.folderAction ?? "open";
     return (
       <>
         <div className="context-menu-overlay" onClick={onClose} onContextMenu={(e) => { e.preventDefault(); onClose(); }} />
@@ -685,23 +569,10 @@ function GroupPopupContextMenu({
           <div className="context-menu-item" onClick={(e) => { e.stopPropagation(); onLaunch(cell); }}>
             ▶ 起動
           </div>
-          {isFolder && (
-            <div className="context-menu-item" onClick={(e) => { e.stopPropagation(); onBrowseFolder(cell.path); onClose(); }}>
-              📂 フォルダを参照
-            </div>
-          )}
           <div className="context-menu-item" onClick={(e) => { e.stopPropagation(); onLaunchAdmin(cell); }}>
             🛡 管理者として起動
           </div>
           <div className="context-menu-separator" />
-          {isFolder && (
-            <>
-              <div className="context-menu-item" onClick={(e) => { e.stopPropagation(); onToggleFolderAction(index, cell); }}>
-                {folderAction === "open" ? "🔄 クリック動作: 開く → 参照に変更" : "🔄 クリック動作: 参照 → 開くに変更"}
-              </div>
-              <div className="context-menu-separator" />
-            </>
-          )}
           <div className="context-menu-item" onClick={(e) => { e.stopPropagation(); onOpenLocation(cell); }}>
             📂 ファイルの場所を開く
           </div>
@@ -723,7 +594,7 @@ function GroupPopupContextMenu({
     );
   }
 
-  // フォールバック
+  // フォールバック（ウィジェット等）
   return (
     <>
       <div className="context-menu-overlay" onClick={onClose} onContextMenu={(e) => { e.preventDefault(); onClose(); }} />
