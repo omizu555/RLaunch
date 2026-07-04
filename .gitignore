@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Claude Code hook state (session-local tallies)
+.claude/hooks/state/
+
+# Rust build artifacts (iced rewrite)
+rlaunch-iced/target/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
