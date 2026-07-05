@@ -219,7 +219,26 @@ Message 化に置き換える。エッジファンクション（画面端検出
   設定ファイルからフォント名だけ先読みする軽量 peek 関数を store に用意すると綺麗
 - **ウィンドウの実表示検証**: `EnumWindows`+`IsWindowVisible`+`GetWindowRect` の P/Invoke を
   PowerShell から叩くと、スクリーンショット無しで表示/非表示・位置を機械的に検証できる
-  （マルチモニタで見失わない。SetCursorPos と組み合わせてカーソル連動の E2E も可能）
+  （マルチモニタで見失わない。SetCursorPos と組み合わせてカーソル連動の E2E も可能）。
+  ただしマルチモニタでモニタ間 DPI が異なる環境では GetWindowRect の座標と実描画位置が
+  ずれてクリック自動化が外れることがある → 検証はカーソルをプライマリ中央に置いてから
+  起動し、プライマリ（正座標・等倍）に出すと安定する
+- **image ウィジェットは SVG 不可**（重要・クラッシュ源）: `image::Handle` にラスター以外
+  （SVG バイト列）を渡すと、tiny-skia では描画時に `raster.rs "Image should be allocated"`
+  で **panic**（wgpu は寛容にスキップするので気付きにくい）。SVG は別の `svg` ウィジェット
+  （iced の `svg` feature、内部で resvg。exe +2MB / メモリ増はほぼ無し）で描く。
+  base64 アイコンは SVG（`data:image/svg` or 先頭 `<svg`/`<?xml`）とラスターを判別して
+  出し分ける。**ラスターも `from_bytes`（遅延デコード）でなく `::image::load_from_memory`
+  で実デコード検証してから `from_rgba` にする**と、壊れた画像でも描画時 panic せず
+  安全にスキップできる（旧データに SVG や壊れ画像が紛れていても落ちない）
+- **tiny-skia + 透過ウィンドウ = オーバーレイ残像**: `transparent: true` のウィンドウで
+  tiny-skia を使うと、閉じたオーバーレイ（ダイアログ/ツールチップ/メニュー）の領域が
+  再描画されず前フレームが残像として残る。対策は**不透明テーマのときは `transparent: false`**
+  にすること（`ui.window_opacity < 1.0` のときだけ透過ウィンドウにする）。透過が本当に要る
+  テーマだけ残像を許容する形にすると、大多数の不透明テーマ利用者は残像ゼロになる
+- **デバッグ用の起動タブ指定**: `std::env::var("RLAUNCH_START_TAB")` で起動時の active_tab を
+  指定できるようにしておくと、特定タブでのみ再現するクラッシュを GUI 操作なしで再現できて便利
+  （無害なので残置。今回のタブ3クラッシュ特定に有効だった）
 
 ## 参考実装
 

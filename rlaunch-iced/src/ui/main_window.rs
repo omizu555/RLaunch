@@ -3,7 +3,7 @@
 use crate::app::{layout, App, DragState, GridRef, Message};
 use crate::model::data::GridCell;
 use crate::ui::{grid, overlays, style};
-use iced::widget::{button, column, container, image, mouse_area, row, stack, text, Space};
+use iced::widget::{button, column, container, mouse_area, row, stack, text, Space};
 use iced::{Alignment, Element, Length};
 
 pub fn view(app: &App) -> Element<'_, Message> {
@@ -231,8 +231,8 @@ fn drag_ghost(app: &App, grid: GridRef, index: usize) -> Option<Element<'_, Mess
 
     let (icon_el, label): (Element<'_, Message>, String) = match cell {
         GridCell::Launcher(item) => {
-            let icon: Element<'_, Message> = if let Some(h) = app.icons.get(&item.id) {
-                image(h.clone()).width(24.0).height(24.0).into()
+            let icon: Element<'_, Message> = if let Some(icon) = app.icons.get(&item.id) {
+                crate::app::icon_element(icon, 24.0)
             } else {
                 text("⚙").size(18).into()
             };

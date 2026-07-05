@@ -165,7 +165,7 @@ impl App {
             visible: true,
             resizable: false,
             decorations: false,
-            transparent: true,
+            transparent: self.ui.window_opacity < 1.0,
             level: window::Level::AlwaysOnTop,
             exit_on_close_request: false,
             platform_specific: window::settings::PlatformSpecific {
@@ -227,7 +227,7 @@ impl App {
             visible: true,
             resizable: true,
             decorations: false,
-            transparent: true,
+            transparent: self.ui.window_opacity < 1.0,
             level: window::Level::AlwaysOnTop,
             exit_on_close_request: false,
             platform_specific: window::settings::PlatformSpecific {

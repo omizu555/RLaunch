@@ -4,7 +4,7 @@ use crate::app::{layout, App, DragState, GridRef, Message};
 use crate::model::data::{GridCell, LauncherItem};
 use crate::model::theme::parse_color;
 use crate::ui::style::{self, CellState};
-use iced::widget::{column, container, image, mouse_area, row, stack, text, tooltip};
+use iced::widget::{column, container, mouse_area, row, stack, text, tooltip};
 use iced::{Alignment, Element, Length};
 
 /// グリッドの表示パラメータ（GridRef から解決）
@@ -201,11 +201,8 @@ fn cell_view<'a>(
             launcher_content(app, item, w, h, list, show_labels, label_size)
         }
         Some(GridCell::Group(group)) => {
-            let icon_el: Element<'a, Message> = if let Some(handle) = app.icons.get(&group.id) {
-                image(handle.clone())
-                    .width(if list { 20.0 } else { 32.0 })
-                    .height(if list { 20.0 } else { 32.0 })
-                    .into()
+            let icon_el: Element<'a, Message> = if let Some(icon) = app.icons.get(&group.id) {
+                crate::app::icon_element(icon, if list { 20.0 } else { 32.0 })
             } else {
                 let emoji = group.icon.as_deref().unwrap_or("📂");
                 let mut t = text(emoji.to_string()).size(if list { 16.0 } else { 24.0 });
@@ -288,8 +285,8 @@ fn launcher_content<'a>(
 ) -> Element<'a, Message> {
     let ui = &app.ui;
     let icon_px = if list { 20.0 } else { 32.0 };
-    let icon_el: Element<'a, Message> = if let Some(handle) = app.icons.get(&item.id) {
-        image(handle.clone()).width(icon_px).height(icon_px).into()
+    let icon_el: Element<'a, Message> = if let Some(icon) = app.icons.get(&item.id) {
+        crate::app::icon_element(icon, icon_px)
     } else {
         let emoji = match item.item_type.as_str() {
             "folder" => "📁",

@@ -5,8 +5,8 @@ use crate::external::{self, ExternalEvent, HotkeyRegistry};
 use crate::model::data::{GridCell, LauncherData, LauncherItem};
 use crate::model::store;
 use crate::model::theme::{self, ThemeInfo, UiTheme};
-use iced::widget::image;
-use iced::{keyboard, window, Element, Point, Size, Subscription, Task};
+use iced::widget::{image, svg};
+use iced::{keyboard, window, Element, Length, Point, Size, Subscription, Task};
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::time::Instant;
@@ -262,7 +262,7 @@ pub struct App {
     pub cursor_out_since: Option<Instant>,
 
     // キャッシュ
-    pub icons: HashMap<String, image::Handle>,
+    pub icons: HashMap<String, IconData>,
     pub invalid_paths: HashSet<String>,
 
     // 常駐部品（drop すると消えるので保持し続ける）
@@ -297,6 +297,74 @@ pub struct TabDrag {
     pub index: usize,
     pub start: Point,
     pub dragging: bool,
+}
+
+/// アイコンキャッシュの要素。ラスター(PNG等)とベクター(SVG)を区別する
+/// （iced の image ウィジェットはラスター専用で、SVG を渡すと描画時に panic するため）。
+#[derive(Debug, Clone)]
+pub enum IconData {
+    Raster(image::Handle),
+    Vector(svg::Handle),
+}
+
+/// Base64（data URL 可）を検証してアイコン化する。
+/// - SVG は svg::Handle に（旧版アイコンライブラリ由来）
+/// - ラスターは実デコードして幅高さ>0 を確認し from_rgba に（不正画像での panic を防ぐ）
+/// - どちらでもデコードできなければ None（呼び出し側は絵文字にフォールバック）
+pub fn decode_icon(b64: &str) -> Option<IconData> {
+    use base64::Engine as _;
+    let (svg_hint, raw) = if let Some(rest) = b64.strip_prefix("data:") {
+        let is_svg = rest.starts_with("image/svg");
+        let data = rest.split_once(',').map(|(_, d)| d).unwrap_or(rest);
+        (is_svg, data)
+    } else {
+        (false, b64)
+    };
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(raw.trim())
+        .ok()?;
+    if bytes.is_empty() {
+        return None;
+    }
+    // SVG 判定: data URL のヒント、または先頭が <svg / <?xml
+    let looks_svg = svg_hint || {
+        let head = &bytes[..bytes.len().min(64)];
+        let s = String::from_utf8_lossy(head);
+        let s = s.trim_start();
+        s.starts_with("<svg") || s.starts_with("<?xml")
+    };
+    if looks_svg {
+        Some(IconData::Vector(svg::Handle::from_memory(bytes)))
+    } else {
+        // ラスターは image crate で実デコードして妥当性を確認してから from_rgba。
+        // （from_bytes は遅延デコードで、不正な場合に tiny-skia の描画時 panic を招く）
+        // ※ ここでの `image` は iced::widget::image なので、crate は `::image` で参照する
+        let img = ::image::load_from_memory(&bytes).ok()?;
+        let rgba = img.to_rgba8();
+        let (w, h) = rgba.dimensions();
+        if w == 0 || h == 0 {
+            return None;
+        }
+        Some(IconData::Raster(image::Handle::from_rgba(
+            w,
+            h,
+            rgba.into_raw(),
+        )))
+    }
+}
+
+/// アイコンを指定サイズの Element として描画する
+pub fn icon_element<'a>(icon: &IconData, size: f32) -> Element<'a, Message> {
+    match icon {
+        IconData::Raster(h) => image(h.clone())
+            .width(Length::Fixed(size))
+            .height(Length::Fixed(size))
+            .into(),
+        IconData::Vector(h) => svg(h.clone())
+            .width(Length::Fixed(size))
+            .height(Length::Fixed(size))
+            .into(),
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -447,6 +515,12 @@ impl App {
             save_disabled,
             mtime: data_mtime,
         } = store::load();
+        // デバッグ用: 起動時に開くタブを指定できる（RLAUNCH_START_TAB=1 等）
+        let start_tab = std::env::var("RLAUNCH_START_TAB")
+            .ok()
+            .and_then(|s| s.parse::<usize>().ok())
+            .filter(|&t| t < data.tabs.len())
+            .unwrap_or(0);
         let themes = theme::load_all(&store::themes_dir());
         let ui = theme::find(&themes, &data.settings.theme)
             .map(UiTheme::from_info)
@@ -480,12 +554,16 @@ impl App {
         }
 
         let size = compute_main_size(&data, 0);
+        // 透過テーマ（不透明度<1）のときだけ透過ウィンドウにする。
+        // tiny-skia は透過ウィンドウでオーバーレイの残像が出るため、
+        // 不透明テーマでは透過を無効にして残像を防ぐ。
+        let want_transparent = ui.window_opacity < 1.0;
         let (id, open_task) = window::open(window::Settings {
             size,
             visible: false,
             resizable: false,
             decorations: false,
-            transparent: true,
+            transparent: want_transparent,
             level: window::Level::AlwaysOnTop,
             exit_on_close_request: false,
             platform_specific: window::settings::PlatformSpecific {
@@ -510,7 +588,7 @@ impl App {
             popup: None,
             popup_pos: None,
             folder: None,
-            active_tab: 0,
+            active_tab: start_tab,
             pinned: false,
             focused_cell: None,
             hovered_cell: None,
@@ -677,18 +755,12 @@ impl App {
         }
     }
 
-    /// アイコンキャッシュ再構築（Base64 PNG → image::Handle）
+    /// アイコンキャッシュ再構築（Base64 → IconData。SVG/壊れ画像も安全に扱う）
     pub fn rebuild_icon_cache(&mut self) {
         self.icons.clear();
         let mut add = |id: &str, b64: &str| {
-            let raw = b64
-                .strip_prefix("data:")
-                .and_then(|s| s.split_once(",").map(|(_, d)| d))
-                .unwrap_or(b64);
-            use base64::Engine as _;
-            if let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(raw.trim()) {
-                self.icons
-                    .insert(id.to_string(), image::Handle::from_bytes(bytes));
+            if let Some(icon) = decode_icon(b64) {
+                self.icons.insert(id.to_string(), icon);
             }
         };
         for tab in &self.data.tabs {
@@ -719,10 +791,8 @@ impl App {
 
     /// 1アイテム分のアイコンをキャッシュに追加
     pub fn cache_icon(&mut self, id: &str, b64: &str) {
-        use base64::Engine as _;
-        if let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(b64.trim()) {
-            self.icons
-                .insert(id.to_string(), image::Handle::from_bytes(bytes));
+        if let Some(icon) = decode_icon(b64) {
+            self.icons.insert(id.to_string(), icon);
         }
     }
 

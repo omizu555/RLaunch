@@ -3,7 +3,7 @@
 use crate::app::{layout, App, DragState, Message};
 use crate::model::data::GridCell;
 use crate::ui::{grid, overlays, style};
-use iced::widget::{button, column, container, image, mouse_area, row, stack, text};
+use iced::widget::{button, column, container, mouse_area, row, stack, text};
 use iced::{Alignment, Element, Length};
 
 pub fn view(app: &App) -> Element<'_, Message> {
@@ -79,8 +79,8 @@ pub fn view(app: &App) -> Element<'_, Message> {
                     let (icon_el, glabel): (Element<'_, Message>, String) = match cell {
                         GridCell::Launcher(item) => {
                             let icon: Element<'_, Message> =
-                                if let Some(h) = app.icons.get(&item.id) {
-                                    image(h.clone()).width(20.0).height(20.0).into()
+                                if let Some(icon) = app.icons.get(&item.id) {
+                                    crate::app::icon_element(icon, 20.0)
                                 } else {
                                     text("⚙").size(14).into()
                                 };
