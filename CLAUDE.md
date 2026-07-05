@@ -1,24 +1,33 @@
-# RLaunch — CLaunch風ボタン型ランチャーの Rust 再構築プロジェクト
+# RLaunch — CLaunch風ボタン型ランチャー（iced / Rust）
 
-## 現状と目標
+## 現状
 
-- 現行実装: Tauri v2 + React（`src/`, `src-tauri/`）。動作するが Web 系スタックからの脱却が目標。
-- **進行中の作業: iced（Rust GUI）による完全再実装 → `rlaunch-iced/` サブディレクトリで開発**
-  （ユーザー決定 2026-07-04）。完成してユーザーテストが通ったら旧実装（src/, src-tauri/ 等）を
-  削除し、新実装をリポジトリルートへ昇格させる。
-- 目標: 現行機能のパリティ + 本家 CLaunch の模倣強化（クローンに近いもの）。
-- **ウィジェット機能は一旦廃止**（ユーザー決定 2026-07-04、ずっと後で再検討）。ただし旧データの
-  WidgetItem はロード/セーブで壊さないよう型は維持し、UI では無効セルとして表示する。
-- GUI フレームワークは iced のみ使用可。同伴クレートは `.claude/skills/iced-dev/SKILL.md` の
-  承認済みリスト（2026-07-04 ユーザー承認）に従い、リスト外はユーザーに許可を求める。
+- **本体は iced（Rust GUI）製。リポジトリルートが実装**（`Cargo.toml` / `src/` / `assets/` / `tests/`）。
+  旧 Tauri v2 + React 実装は 2026-07-05 に削除し、iced 版をルートへ昇格済み。
+- 目標: CLaunch（老舗Windowsランチャー）のクローンに近い使用感 + 旧版機能のパリティ。
+- **ウィジェット機能は廃止**（ユーザー決定 2026-07-04、ずっと後で再検討）。旧データの WidgetItem は
+  ロード/セーブで壊さないよう型を維持し、UI では無効セルとして表示する。
+- GUI は iced のみ。同伴クレートは `.claude/skills/iced-dev/SKILL.md` の承認済みリスト
+  （2026-07-04 ユーザー承認）に従い、リスト外はユーザーに許可を求める。
+- 描画は tiny-skia（ソフトウェア）。**影(shadow)は使わない**（tiny-skia で残像化するため。
+  詳細は iced-dev スキル）。
+
+## ビルド・実行
+
+```powershell
+cargo build --release   # 成果物: target/release/rlaunch.exe（単一バイナリ）
+cargo run               # 開発実行（常駐型。トレイに常駐しウィンドウは初回表示）
+```
+検証手順は `.claude/skills/rlaunch-verify/SKILL.md`。デバッグ用に `RLAUNCH_START_TAB=<n>` で
+起動時タブを指定できる（特定タブ依存の不具合の再現に便利）。
 
 ## 開発スキル（作業前に必ず該当スキルを読む）
 
 | スキル | 用途 |
 |---|---|
 | `clanch-spec` | 本家 CLaunch の挙動仕様・模倣ロードマップ（gap-analysis） |
-| `rlaunch-legacy` | 現行 Tauri 版の機能インベントリ・データ互換・未配線バグ一覧 |
-| `iced-dev` | iced 0.14 の設計方針・承認クレート・統合パターン・落とし穴 |
+| `rlaunch-legacy` | 旧版のデータモデル・データ互換仕様（launcher-data.json スキーマ）・移植時の判断記録 |
+| `iced-dev` | iced 0.14 の設計方針・承認クレート・統合パターン・落とし穴（tiny-skia残像対策など） |
 | `rlaunch-verify` | ビルド・実行・動作検証の手順 |
 | `skill-evolve` | セッションの学びをスキルへ反映（自己進化） |
 
@@ -31,5 +40,5 @@
 
 ## 注意
 
-- `docs/` 配下のドキュメントは実装より古い箇所がある。現行仕様の正は rlaunch-legacy スキルと実コード。
-- 既存ユーザーデータ `%APPDATA%/com.rlaunch.app/launcher-data.json` との互換を壊さないこと。
+- 既存ユーザーデータ `%APPDATA%/com.rlaunch.app/launcher-data.json`（旧 Tauri 版と共通）との
+  互換を壊さないこと。未知フィールドはラウンドトリップで温存する。

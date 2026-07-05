@@ -1,14 +1,12 @@
 ---
 name: rlaunch-verify
-description: RLaunch（iced版）のビルド・実行・動作検証の手順。コード変更後の検証、アプリの起動確認、リリース前チェック、「動くか確認して」と言われたときに使用する。旧Tauri版の起動方法（挙動比較用）も含む。
+description: RLaunch（iced版）のビルド・実行・動作検証の手順。コード変更後の検証、アプリの起動確認、リリース前チェック、「動くか確認して」と言われたときに使用する。ウィンドウ表示の機械的検証（Win32 P/Invoke）手順も含む。
 ---
 
 # rlaunch-verify — ビルド・実行・検証手順
 
-## iced 版（新実装）
-
-ソースの場所: `rlaunch-iced/`（リポジトリ直下のサブディレクトリ）。cargo コマンドは
-`rlaunch-iced/` 内で実行する。完成・ユーザーテスト後に旧実装を削除してルートへ昇格予定。
+ソースはリポジトリルート（`Cargo.toml` / `src/` / `assets/` / `tests/`）。cargo コマンドは
+ルートで実行する（2026-07-05 に iced 版をルートへ昇格、旧 Tauri 実装は削除済み）。
 
 ### 1. 静的検証（コード変更のたびに必ず）
 
@@ -59,19 +57,22 @@ cargo build --release
 # 成果物: target/release/*.exe（単一バイナリ。配布方式が決まったらここを更新）
 ```
 
-## 旧 Tauri 版（挙動比較のリファレンスとして起動する場合）
+### 5. ウィンドウ表示の機械的検証（スクショに頼らない）
 
-```powershell
-npm install        # 初回のみ
-cargo tauri dev    # 開発モード起動（Node 20+ / Rust 1.83+ / WebView2 必要）
-```
-
-- 旧版のデータも `%APPDATA%/com.rlaunch.app/` を使う。**新旧を同時起動しない**
-  （同じ store を書き合う・ホットキー衝突）。比較検証時は片方ずつ。
-- 検証用にデータを退避: `Copy-Item "$env:APPDATA/com.rlaunch.app/launcher-data.json" バックアップ先`
+常駐＋マルチウィンドウ＋マルチモニタなので、表示/非表示・位置・残像は Win32 P/Invoke で
+機械的に確認できる（`iced-dev` スキルにコード断片あり）:
+- `EnumWindows`+`GetWindowThreadProcessId`+`IsWindowVisible`+`GetWindowRect` で対象ウィンドウの
+  表示状態と矩形を取得（マルチモニタで見失わない）
+- `SetCursorPos`+`mouse_event` で右クリック/移動を再現し、`CopyFromScreen` でウィンドウ領域を
+  キャプチャ → メニュー/ツールチップの残像や表示を目視
+- カーソルをプライマリ中央に置いてから起動すると、モニタ間 DPI 差の座標ズレを避けられる
+- テスト後は必ず `Stop-Process -Name rlaunch -Force`。プロセスが残ると多重起動防止で次が起動しない
 
 ## 落とし穴 / Learnings
 
 <!-- skill-evolve がここに学びを追記する -->
 - 検証中にアプリを起動したまま次のビルドをすると、Windows では exe がロックされて
   リンクエラー（os error 5 / 32）になる。ビルド前にプロセス終了を確認すること。
+- rust-analyzer が `target/` や `src/` を掴んでいると git mv / rm / cargo clean が
+  Permission denied になる。大きなファイル操作の前に `Stop-Process -Name rust-analyzer`
+  （VSCode が自動で再起動する）。
