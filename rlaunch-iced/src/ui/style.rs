@@ -288,7 +288,10 @@ pub fn menu_item(ui: &UiTheme, danger: bool) -> impl Fn(&Theme, button::Status) 
     }
 }
 
-/// オーバーレイのパネル（ダイアログ・メニューの箱）
+/// オーバーレイのパネル（ダイアログ・メニューの箱）。
+/// 影は付けない — tiny-skia では影がウィジェット bounds 外に描かれ、
+/// メニュー/ダイアログの表示・消去やホバー再描画で残像化するため。
+/// 立体感は border（枠）で表現する。
 pub fn panel(ui: &UiTheme) -> impl Fn(&Theme) -> container::Style {
     let bg = ui.bg_secondary;
     let border = ui.border_color;
@@ -299,11 +302,6 @@ pub fn panel(ui: &UiTheme) -> impl Fn(&Theme) -> container::Style {
             color: border,
             width: 1.0,
             radius: radius.into(),
-        },
-        shadow: iced::Shadow {
-            color: Color::from_rgba(0.0, 0.0, 0.0, 0.35),
-            offset: iced::Vector::new(0.0, 4.0),
-            blur_radius: 16.0,
         },
         ..Default::default()
     }
@@ -358,7 +356,7 @@ pub fn tooltip_panel(ui: &UiTheme) -> impl Fn(&Theme) -> container::Style {
     }
 }
 
-/// トースト通知
+/// トースト通知（影なし。tiny-skia の残像回避のため。枠で縁取る）
 pub fn toast(ui: &UiTheme) -> impl Fn(&Theme) -> container::Style {
     let bg = ui.bg_secondary;
     let border = ui.accent;
@@ -369,11 +367,6 @@ pub fn toast(ui: &UiTheme) -> impl Fn(&Theme) -> container::Style {
             color: border,
             width: 1.0,
             radius: radius.into(),
-        },
-        shadow: iced::Shadow {
-            color: Color::from_rgba(0.0, 0.0, 0.0, 0.4),
-            offset: iced::Vector::new(0.0, 2.0),
-            blur_radius: 8.0,
         },
         ..Default::default()
     }
