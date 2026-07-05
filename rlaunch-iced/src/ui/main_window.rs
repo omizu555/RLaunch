@@ -98,7 +98,7 @@ fn titlebar(app: &App) -> Element<'_, Message> {
             .on_press(Message::OpenSettings),
         title_area,
         button(text("📌").size(12))
-            .style(style::icon_button(ui, app.pinned))
+            .style(style::pin_button(ui, app.pinned))
             .padding([4, 8])
             .on_press(Message::PinToggle),
         button(text("─").size(12))

@@ -191,6 +191,38 @@ pub fn icon_button(
     }
 }
 
+/// ピン留めトグルボタン。ON/OFF を背景・枠でハッキリ示す
+/// （絵文字📌は色を変えられないため、背景で状態を表現する）。
+pub fn pin_button(ui: &UiTheme, active: bool) -> impl Fn(&Theme, button::Status) -> button::Style {
+    let accent = ui.accent;
+    let accent_soft = with_alpha(ui.accent, 0.20);
+    let hover_bg = ui.bg_button_hover;
+    let text = ui.text_secondary;
+    let radius = ui.border_radius_sm;
+    move |_, status| {
+        let hovered = matches!(status, button::Status::Hovered | button::Status::Pressed);
+        // ON: アクセントの薄い塗り + アクセントの枠（囲まれてアクティブな見た目）
+        // OFF: 背景なし（ホバー時のみ薄い背景）
+        let bg = if active {
+            Some(Background::Color(accent_soft))
+        } else if hovered {
+            Some(Background::Color(hover_bg))
+        } else {
+            None
+        };
+        button::Style {
+            background: bg,
+            text_color: text,
+            border: Border {
+                color: if active { accent } else { Color::TRANSPARENT },
+                width: if active { 1.5 } else { 0.0 },
+                radius: radius.into(),
+            },
+            ..Default::default()
+        }
+    }
+}
+
 /// 標準ボタン（ダイアログの保存/キャンセル等）。primary=true でアクセント色。
 pub fn dialog_button(
     ui: &UiTheme,
