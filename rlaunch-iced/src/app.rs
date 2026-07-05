@@ -289,6 +289,10 @@ pub struct App {
     /// カーソルアウト非表示のアーミング（表示後、カーソルが一度ウィンドウに
     /// 入ってから「外に出たら消す」を有効化する）
     pub cursor_out_armed: bool,
+    /// 最後にカーソルが動いた時刻（ツールチップの静止表示判定用）
+    pub last_cursor_move: Option<Instant>,
+    /// ツールチップ表示中か（静止して一定時間経過で true、カーソル移動で false）
+    pub tooltip_shown: bool,
 }
 
 /// タブの D&D 並び替え状態
@@ -625,6 +629,8 @@ impl App {
             save_disabled,
             titlebar_dragging: false,
             cursor_out_armed: false,
+            last_cursor_move: None,
+            tooltip_shown: false,
         };
         app.rebuild_icon_cache();
         app.recheck_invalid_paths();
@@ -691,6 +697,10 @@ impl App {
             || !self.pending_drops.is_empty()
             || matches!(self.drag, DragState::Dragging { .. })
             || (self.main_visible && self.data.settings.hide_on_cursor_out && !self.pinned)
+            // ツールチップの静止表示待ち（ホバー中でまだ未表示なら Tick で経過を測る）
+            || (self.hovered_cell.is_some()
+                && !self.tooltip_shown
+                && self.last_cursor_move.is_some())
     }
 
     // ------------------------------------------------------------------

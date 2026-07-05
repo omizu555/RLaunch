@@ -20,6 +20,8 @@ const CURSOR_OUT_DELAY: Duration = Duration::from_millis(500);
 const TAB_HOVER_SWITCH: Duration = Duration::from_millis(500);
 const DROP_FLUSH_DELAY: Duration = Duration::from_millis(150);
 const DOUBLE_CLICK: Duration = Duration::from_millis(400);
+/// ツールチップを表示するまでのホバー静止時間
+const TOOLTIP_DELAY: Duration = Duration::from_millis(500);
 
 impl App {
     pub fn update(&mut self, message: Message) -> Task<Message> {
@@ -206,6 +208,9 @@ impl App {
             }
             Message::CursorMoved(p) => {
                 self.cursor = p;
+                // カーソルが動いたらツールチップを隠し、静止タイマーを再スタート
+                self.last_cursor_move = Some(Instant::now());
+                self.tooltip_shown = false;
                 self.maybe_start_drag(p, false);
                 if let Some(d) = &mut self.tab_drag {
                     if !d.dragging {
@@ -219,6 +224,8 @@ impl App {
             }
             Message::PopupCursorMoved(p) => {
                 self.popup_cursor = p;
+                self.last_cursor_move = Some(Instant::now());
+                self.tooltip_shown = false;
                 self.maybe_start_drag(p, true);
                 Task::none()
             }
@@ -780,6 +787,15 @@ impl App {
     fn on_tick(&mut self) -> Task<Message> {
         let now = Instant::now();
         let mut tasks: Vec<Task<Message>> = Vec::new();
+
+        // ツールチップ静止表示: カーソルが一定時間止まっていたら表示
+        if !self.tooltip_shown && self.hovered_cell.is_some() {
+            if let Some(t) = self.last_cursor_move {
+                if now >= t + TOOLTIP_DELAY {
+                    self.tooltip_shown = true;
+                }
+            }
+        }
 
         // トースト期限
         if let Some((_, until)) = &self.toast {

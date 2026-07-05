@@ -310,6 +310,22 @@ pub fn input(ui: &UiTheme) -> impl Fn(&Theme, text_input::Status) -> text_input:
     }
 }
 
+/// ツールチップのパネル（影なし。影は tiny-skia で bounds 外に描かれ残像化するため）
+pub fn tooltip_panel(ui: &UiTheme) -> impl Fn(&Theme) -> container::Style {
+    let bg = ui.bg_secondary;
+    let border = ui.border_color;
+    let radius = ui.border_radius_sm;
+    move |_| container::Style {
+        background: Some(Background::Color(bg)),
+        border: Border {
+            color: border,
+            width: 1.0,
+            radius: radius.into(),
+        },
+        ..Default::default()
+    }
+}
+
 /// トースト通知
 pub fn toast(ui: &UiTheme) -> impl Fn(&Theme) -> container::Style {
     let bg = ui.bg_secondary;

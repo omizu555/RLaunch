@@ -619,6 +619,11 @@ pub fn search_overlay(app: &App) -> Element<'_, Message> {
 /// ホバー中セルのツールチップ（stack レイヤーで自前描画。iced の tooltip ウィジェットは
 /// tiny-skia で残像化するため使わない）。in_popup=true ならポップアップ座標系で配置する。
 pub fn hover_tooltip(app: &App, in_popup: bool) -> Option<Element<'_, Message>> {
+    // 静止表示: カーソルが一定時間止まってから表示（動くと消える）。
+    // これで表示中はカーソルが動かず、追従による残像も出ない。
+    if !app.tooltip_shown {
+        return None;
+    }
     // ドラッグ中・メニュー/オーバーレイ表示中は出さない
     if app.ctx_menu.is_some() || !matches!(app.overlay, Overlay::None) {
         return None;
@@ -643,7 +648,7 @@ pub fn hover_tooltip(app: &App, in_popup: bool) -> Option<Element<'_, Message>> 
     let panel = container(text(tip).size(11).color(ui.text_primary))
         .padding(6)
         .max_width(360.0)
-        .style(style::panel(ui));
+        .style(style::tooltip_panel(ui));
 
     // カーソルの少し下に配置。おおよその推定サイズでウィンドウ内にクランプ。
     let bounds = if in_popup {
