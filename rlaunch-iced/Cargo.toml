@@ -6,7 +6,16 @@ description = "CLaunch-style button launcher for Windows (iced rewrite)"
 license = "MIT"
 
 [dependencies]
-iced = { version = "0.14", features = ["image", "canvas", "tokio", "advanced"] }
+# wgpu(GPU描画)を外し tiny-skia(ソフトウェア描画)のみにする。
+# ランチャー用途では描画差は無く、GPUバッファ分のメモリ（100MB超）を節約できる。
+iced = { version = "0.14", default-features = false, features = [
+    "tiny-skia",
+    "crisp",
+    "thread-pool",
+    "image",
+    "tokio",
+    "advanced",
+] }
 global-hotkey = "0.8"
 tray-icon = "0.24"
 auto-launch = "0.6"

@@ -282,6 +282,13 @@ pub struct App {
     pub data_mtime: Option<std::time::SystemTime>,
     /// 読み取り失敗時に true（データ全消失を防ぐため保存を禁止）
     pub save_disabled: bool,
+    /// タイトルバー/ポップアップヘッダーのドラッグ移動中
+    /// （この間だけウィンドウ移動による自動非表示抑制を行う。
+    /// 表示時の programmatic な move_to では抑制しない）
+    pub titlebar_dragging: bool,
+    /// カーソルアウト非表示のアーミング（表示後、カーソルが一度ウィンドウに
+    /// 入ってから「外に出たら消す」を有効化する）
+    pub cursor_out_armed: bool,
 }
 
 /// タブの D&D 並び替え状態
@@ -428,6 +435,8 @@ pub enum SettingsMsg {
     Import,
     /// launcher-data.json 全文をクリップボードへ
     CopyData,
+    /// UIフォント変更（None = 既定の Yu Gothic UI。再起動後に反映）
+    FontFamily(Option<String>),
 }
 
 impl App {
@@ -536,6 +545,8 @@ impl App {
             last_tab_click: None,
             data_mtime,
             save_disabled,
+            titlebar_dragging: false,
+            cursor_out_armed: false,
         };
         app.rebuild_icon_cache();
         app.recheck_invalid_paths();

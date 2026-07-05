@@ -59,6 +59,9 @@ pub struct AppSettings {
     /// CLaunch 風: カーソルがウィンドウ外に出たら非表示（iced 版の新設定）
     #[serde(default)]
     pub hide_on_cursor_out: bool,
+    /// UIフォントファミリー名（None = 既定の Yu Gothic UI。iced 版の新設定）
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub font_family: Option<String>,
     #[serde(flatten)]
     pub extra: Extra,
 }

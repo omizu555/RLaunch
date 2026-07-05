@@ -62,6 +62,7 @@ impl App {
         self.main_visible = true;
         self.unfocused_since = None;
         self.cursor_out_since = None;
+        self.cursor_out_armed = false;
         Task::batch(tasks).map(|_: window::Id| Message::Noop)
     }
 

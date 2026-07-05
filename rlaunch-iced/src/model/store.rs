@@ -155,6 +155,17 @@ pub fn rotate_backups() {
     let _ = fs::copy(&current, bak(1));
 }
 
+/// フォント名だけを軽量に読む（daemon 起動前に default_font を決めるため。
+/// 本ロードは boot 側で改めて行う）
+pub fn peek_font_family() -> Option<String> {
+    let text = fs::read_to_string(data_file_path()).ok()?;
+    let v: serde_json::Value = serde_json::from_str(&text).ok()?;
+    v.get("settings")?
+        .get("fontFamily")?
+        .as_str()
+        .map(|s| s.to_string())
+}
+
 /// エクスポート（保存ダイアログ等から任意パスへ）
 pub fn export_to(data: &LauncherData, path: &std::path::Path) -> Result<(), String> {
     let json = serde_json::to_string_pretty(data).map_err(|e| e.to_string())?;

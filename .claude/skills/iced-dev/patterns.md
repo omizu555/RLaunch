@@ -209,6 +209,17 @@ Message 化に置き換える。エッジファンクション（画面端検出
 - tokio を直接依存に足さずにブロッキング処理を Task 化するには `futures::channel::oneshot` + `std::thread::spawn` の自前 `blocking()` ヘルパーで足りる（アイコン抽出・lnk解決は必ずこれで包む。update 内で同期実行するとネットワーク lnk で数秒フリーズする）
 - `tray-icon` 0.24: ダブルクリック時は `Click{button_state: Up}` が2回届く。トグル用途は **Down** でマッチすること（Upだと2回トグルして元に戻る）
 - API の裏取りは docs.rs より `~/.cargo/registry/src/index.crates.io-*/iced*-0.14.*/src/` のローカルソースを grep するのが確実で速い
+- **メモリ**: デフォルトの wgpu レンダラーは常駐アプリには重い（実測: リリースビルドで WS 212MB）。
+  `default-features = false` + `features = ["tiny-skia", "crisp", "thread-pool", ...]` の
+  ソフトウェア描画にすると **WS 25MB / Private 8MB / exe 14.7→8.3MB** まで落ちる。
+  ランチャー程度の UI なら描画品質・速度の体感差は無い
+- **日本語フォント**: iced の既定はフォールバック任せで日本語が見づらい。
+  `daemon(...).default_font(Font::with_name(name))` で明示する（`with_name` は `&'static str`
+  要求なので設定値は `Box::leak` する。builder は起動時のみ → 実行時変更は再起動が必要）。
+  設定ファイルからフォント名だけ先読みする軽量 peek 関数を store に用意すると綺麗
+- **ウィンドウの実表示検証**: `EnumWindows`+`IsWindowVisible`+`GetWindowRect` の P/Invoke を
+  PowerShell から叩くと、スクリーンショット無しで表示/非表示・位置を機械的に検証できる
+  （マルチモニタで見失わない。SetCursorPos と組み合わせてカーソル連動の E2E も可能）
 
 ## 参考実装
 

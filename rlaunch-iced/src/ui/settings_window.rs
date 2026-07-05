@@ -1,4 +1,11 @@
-//! 設定ウィンドウのビュー。変更は即時反映・即時保存。
+//! 設定ウィンドウのビュー。変更は即時反映・即時保存（フォントのみ再起動後）。
+//!
+//! セクション構成の方針:
+//! - 「動作」= 呼び出し方と消え方（最もよく触る）
+//! - 「外観」= 見た目（テーマ・フォント・セル・タイトル）
+//! - 「新規タブの既定」= 新しいタブを作るときの初期値。既存タブには影響しない
+//!   （既存タブの列/行/表示モードはタブ右クリック→タブ設定で個別に変更する）
+//! - 「データ」= バックアップ・移行
 
 use crate::app::{App, FormMsg, Message, Overlay, SettingsMsg};
 use crate::ui::style;
@@ -8,8 +15,24 @@ use iced::widget::{
 };
 use iced::{Alignment, Element, Length};
 
+/// フォント候補（Windows 標準搭載の日本語対応フォント中心）
+const FONT_DEFAULT_LABEL: &str = "既定 (Yu Gothic UI)";
+const FONT_CHOICES: [&str; 7] = [
+    FONT_DEFAULT_LABEL,
+    "Meiryo UI",
+    "メイリオ",
+    "BIZ UDPゴシック",
+    "MS UI Gothic",
+    "Yu Gothic",
+    "Segoe UI",
+];
+
 fn section<'a>(app: &'a App, title: &'a str) -> Element<'a, Message> {
     text(title.to_string()).size(13).color(app.ui.accent).into()
+}
+
+fn note(app: &App, body: impl Into<String>) -> Element<'_, Message> {
+    text(body.into()).size(9).color(app.ui.text_muted).into()
 }
 
 fn setting_row<'a>(
@@ -45,6 +68,13 @@ pub fn view(app: &App) -> Element<'_, Message> {
         .find(|t| t.id == s.theme)
         .map(|t| format!("{} ({})", t.label, t.id));
 
+    // フォント選択
+    let font_labels: Vec<String> = FONT_CHOICES.iter().map(|f| f.to_string()).collect();
+    let selected_font = s
+        .font_family
+        .clone()
+        .unwrap_or_else(|| FONT_DEFAULT_LABEL.to_string());
+
     let view_modes = ["grid".to_string(), "list".to_string()];
     let window_positions = [
         "cursor".to_string(),
@@ -53,92 +83,6 @@ pub fn view(app: &App) -> Element<'_, Message> {
     ];
 
     let content = column![
-        // ---------------- 外観 ----------------
-        section(app, "外観"),
-        setting_row(
-            app,
-            "テーマ",
-            pick_list(theme_labels, selected_theme, |v| {
-                // "ラベル (id)" から id を取り出す
-                let id = v
-                    .rsplit_once('(')
-                    .map(|(_, rest)| rest.trim_end_matches(')').to_string())
-                    .unwrap_or(v);
-                Message::Settings(SettingsMsg::ThemeSelected(id))
-            })
-            .text_size(11)
-            .width(Length::Fill)
-            .into(),
-        ),
-        setting_row(
-            app,
-            format!("セルサイズ: {}px", s.cell_size),
-            slider(40..=120u32, s.cell_size, |v| {
-                Message::Settings(SettingsMsg::CellSize(v / 4 * 4))
-            })
-            .into(),
-        ),
-        setting_row(
-            app,
-            "ボタンラベル",
-            checkbox(s.show_labels)
-                .label("表示する")
-                .size(14)
-                .text_size(11)
-                .on_toggle(|v| Message::Settings(SettingsMsg::ShowLabels(v)))
-                .into(),
-        ),
-        setting_row(
-            app,
-            format!("ラベルサイズ: {}px", s.label_font_size),
-            slider(8..=16u32, s.label_font_size, |v| {
-                Message::Settings(SettingsMsg::LabelFontSize(v))
-            })
-            .into(),
-        ),
-        row![
-            Space::new().width(130.0),
-            button(text("📁 テーマフォルダを開く").size(11))
-                .style(style::dialog_button(ui, false))
-                .padding([4, 10])
-                .on_press(Message::Settings(SettingsMsg::OpenThemesDir)),
-        ]
-        .spacing(8),
-        // ---------------- レイアウト ----------------
-        section(app, "レイアウト（全タブ共通）"),
-        setting_row(
-            app,
-            format!("列数: {}", s.default_grid_columns),
-            slider(1..=20u32, s.default_grid_columns, |v| {
-                Message::Settings(SettingsMsg::GridCols(v))
-            })
-            .into(),
-        ),
-        setting_row(
-            app,
-            format!("行数: {}", s.default_grid_rows),
-            slider(1..=10u32, s.default_grid_rows, |v| {
-                Message::Settings(SettingsMsg::GridRows(v))
-            })
-            .into(),
-        ),
-        setting_row(
-            app,
-            "表示モード",
-            pick_list(view_modes.to_vec(), Some(s.view_mode.clone()), |v| {
-                Message::Settings(SettingsMsg::ViewMode(v))
-            })
-            .text_size(11)
-            .into(),
-        ),
-        setting_row(
-            app,
-            format!("リスト列数: {}", s.list_columns),
-            slider(1..=4u32, s.list_columns, |v| {
-                Message::Settings(SettingsMsg::ListColumns(v))
-            })
-            .into(),
-        ),
         // ---------------- 動作 ----------------
         section(app, "動作"),
         setting_row(
@@ -209,16 +153,116 @@ pub fn view(app: &App) -> Element<'_, Message> {
                 .on_toggle(|v| Message::Settings(SettingsMsg::AutoStart(v)))
                 .into(),
         ),
-        // ---------------- アプリ ----------------
-        section(app, "アプリ"),
+        // ---------------- 外観 ----------------
+        section(app, "外観"),
         setting_row(
             app,
-            "タイトル",
+            "テーマ",
+            pick_list(theme_labels, selected_theme, |v| {
+                // "ラベル (id)" から id を取り出す
+                let id = v
+                    .rsplit_once('(')
+                    .map(|(_, rest)| rest.trim_end_matches(')').to_string())
+                    .unwrap_or(v);
+                Message::Settings(SettingsMsg::ThemeSelected(id))
+            })
+            .text_size(11)
+            .width(Length::Fill)
+            .into(),
+        ),
+        setting_row(
+            app,
+            "フォント",
+            pick_list(font_labels, Some(selected_font), |v| {
+                let name = if v == FONT_DEFAULT_LABEL { None } else { Some(v) };
+                Message::Settings(SettingsMsg::FontFamily(name))
+            })
+            .text_size(11)
+            .width(Length::Fill)
+            .into(),
+        ),
+        note(app, "フォントの変更はアプリの再起動後に反映されます"),
+        setting_row(
+            app,
+            format!("セルサイズ: {}px", s.cell_size),
+            slider(40..=120u32, s.cell_size, |v| {
+                Message::Settings(SettingsMsg::CellSize(v / 4 * 4))
+            })
+            .into(),
+        ),
+        setting_row(
+            app,
+            "ボタンラベル",
+            checkbox(s.show_labels)
+                .label("表示する")
+                .size(14)
+                .text_size(11)
+                .on_toggle(|v| Message::Settings(SettingsMsg::ShowLabels(v)))
+                .into(),
+        ),
+        setting_row(
+            app,
+            format!("ラベルサイズ: {}px", s.label_font_size),
+            slider(8..=16u32, s.label_font_size, |v| {
+                Message::Settings(SettingsMsg::LabelFontSize(v))
+            })
+            .into(),
+        ),
+        setting_row(
+            app,
+            "ウィンドウタイトル",
             text_input("RLaunch", &s.app_title)
                 .on_input(|v| Message::Settings(SettingsMsg::AppTitle(v)))
                 .size(11)
                 .style(style::input(ui))
                 .into(),
+        ),
+        row![
+            Space::new().width(130.0),
+            button(text("📁 テーマフォルダを開く").size(11))
+                .style(style::dialog_button(ui, false))
+                .padding([4, 10])
+                .on_press(Message::Settings(SettingsMsg::OpenThemesDir)),
+        ]
+        .spacing(8),
+        // ---------------- 新規タブの既定 ----------------
+        section(app, "新規タブの既定"),
+        note(
+            app,
+            "新しくタブを作るときの初期値です。既存のタブには影響しません\n（既存タブの列・行・表示モードは、タブを右クリック → タブ設定 で個別に変更できます）",
+        ),
+        setting_row(
+            app,
+            format!("列数: {}", s.default_grid_columns),
+            slider(1..=20u32, s.default_grid_columns, |v| {
+                Message::Settings(SettingsMsg::GridCols(v))
+            })
+            .into(),
+        ),
+        setting_row(
+            app,
+            format!("行数: {}", s.default_grid_rows),
+            slider(1..=10u32, s.default_grid_rows, |v| {
+                Message::Settings(SettingsMsg::GridRows(v))
+            })
+            .into(),
+        ),
+        setting_row(
+            app,
+            "表示モード",
+            pick_list(view_modes.to_vec(), Some(s.view_mode.clone()), |v| {
+                Message::Settings(SettingsMsg::ViewMode(v))
+            })
+            .text_size(11)
+            .into(),
+        ),
+        setting_row(
+            app,
+            format!("リスト列数: {}", s.list_columns),
+            slider(1..=4u32, s.list_columns, |v| {
+                Message::Settings(SettingsMsg::ListColumns(v))
+            })
+            .into(),
         ),
         // ---------------- データ ----------------
         section(app, "データ"),
@@ -242,12 +286,10 @@ pub fn view(app: &App) -> Element<'_, Message> {
                 .on_press(Message::Settings(SettingsMsg::OpenDataDir)),
         ]
         .spacing(6),
-        text(format!(
-            "保存先: {}",
-            crate::model::store::data_file_path().display()
-        ))
-        .size(9)
-        .color(ui.text_muted),
+        note(
+            app,
+            format!("保存先: {}", crate::model::store::data_file_path().display()),
+        ),
     ]
     .spacing(10)
     .padding(16);

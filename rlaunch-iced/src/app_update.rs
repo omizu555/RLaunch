@@ -41,7 +41,13 @@ impl App {
             Message::Tick => self.on_tick(),
 
             // ---------------- タイトルバー ----------------
-            Message::TitlebarDrag => window::drag(self.main_id).map(|_: ()| Message::Noop),
+            Message::TitlebarDrag => {
+                // ユーザーによるドラッグ移動中のみ自動非表示を抑制する
+                // （表示時の programmatic な move_to では抑制しない）
+                self.titlebar_dragging = true;
+                self.suppress_hide_until = Some(Instant::now() + Duration::from_secs(2));
+                window::drag(self.main_id).map(|_: ()| Message::Noop)
+            }
             Message::PinToggle => {
                 self.pinned = !self.pinned;
                 Task::none()
@@ -190,6 +196,7 @@ impl App {
             }
             Message::RootReleased => {
                 self.drag = DragState::Idle;
+                self.titlebar_dragging = false;
                 if let Some(d) = self.tab_drag.take() {
                     if d.dragging {
                         self.save();
@@ -264,6 +271,7 @@ impl App {
             // ---------------- グループポップアップ ----------------
             Message::PopupHeaderDrag => {
                 if let Some(p) = &self.popup {
+                    self.titlebar_dragging = true;
                     self.suppress_hide_until = Some(Instant::now() + POPUP_GUARD);
                     window::drag(p.id).map(|_: ()| Message::Noop)
                 } else {
@@ -458,6 +466,7 @@ impl App {
                 // セル上のリリースは mouse_area の CellReleased が先に処理し
                 // drag は既に Idle になっているため、ここは残留分の掃除のみ。
                 self.drag = DragState::Idle;
+                self.titlebar_dragging = false;
                 if let Some(d) = self.tab_drag.take() {
                     if d.dragging {
                         self.save();
@@ -488,8 +497,13 @@ impl App {
                         self.data.settings.window_x = Some(p.x as i32);
                         self.data.settings.window_y = Some(p.y as i32);
                     }
-                    // ウィンドウ移動直後のフォーカス揺れで消えないように
-                    self.suppress_hide_until = Some(Instant::now() + Duration::from_secs(2));
+                    // ユーザーがタイトルバーでドラッグ中のみ、移動に伴う
+                    // フォーカス揺れで消えないよう抑制を延長する。
+                    // （表示時の move_to でも Moved は来るが、そこで抑制すると
+                    // 表示直後にデスクトップをクリックしても消えなくなる）
+                    if self.titlebar_dragging {
+                        self.suppress_hide_until = Some(Instant::now() + Duration::from_secs(2));
+                    }
                 } else if self.popup.as_ref().map(|p| p.id) == Some(id) {
                     self.popup_pos = Some(p);
                     self.popup_unfocused_since = None;
@@ -849,8 +863,12 @@ impl App {
                     && (cy as f32) >= y0
                     && (cy as f32) <= y1;
                 if inside {
+                    // 一度ウィンドウに入って初めて「外に出たら消す」を発動可能にする。
+                    // （表示位置=center 等でカーソルから離れた場所に出た直後、
+                    // 触れる前に消えてしまうのを防ぐ）
+                    self.cursor_out_armed = true;
                     self.cursor_out_since = None;
-                } else {
+                } else if self.cursor_out_armed {
                     let since = *self.cursor_out_since.get_or_insert(now);
                     if now >= since + CURSOR_OUT_DELAY {
                         self.cursor_out_since = None;
@@ -1760,25 +1778,18 @@ impl App {
                 self.save();
                 self.resize_main_task()
             }
+            // 列/行の全体設定は「新規タブの既定値」のみ。既存タブは変更しない
+            // （旧版の全タブ一括リサイズは縮小時にアイテムが消える危険があるため廃止。
+            // 各タブのサイズはタブ右クリック→タブ設定で個別に変更する）
             SettingsMsg::GridCols(v) => {
-                let v = v.clamp(1, 20);
-                self.data.settings.default_grid_columns = v;
-                for t in &mut self.data.tabs {
-                    let rows = t.grid_rows;
-                    t.resize_grid(v, rows);
-                }
+                self.data.settings.default_grid_columns = v.clamp(1, 20);
                 self.save();
-                self.resize_main_task()
+                Task::none()
             }
             SettingsMsg::GridRows(v) => {
-                let v = v.clamp(1, 10);
-                self.data.settings.default_grid_rows = v;
-                for t in &mut self.data.tabs {
-                    let cols = t.grid_columns;
-                    t.resize_grid(cols, v);
-                }
+                self.data.settings.default_grid_rows = v.clamp(1, 10);
                 self.save();
-                self.resize_main_task()
+                Task::none()
             }
             SettingsMsg::ShowLabels(b) => {
                 self.data.settings.show_labels = b;
@@ -1877,6 +1888,12 @@ impl App {
                 {
                     self.show_toast(e);
                 }
+                Task::none()
+            }
+            SettingsMsg::FontFamily(name) => {
+                self.data.settings.font_family = name;
+                self.save();
+                self.show_toast("フォントは再起動後に反映されます");
                 Task::none()
             }
             SettingsMsg::CopyData => {
