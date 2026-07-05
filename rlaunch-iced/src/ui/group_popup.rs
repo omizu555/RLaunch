@@ -129,6 +129,12 @@ pub fn view(app: &App) -> Element<'_, Message> {
             layers.push(el);
         }
     }
+    // ホバーツールチップ（ポップアップのグリッド用）
+    if app.ctx_menu.is_none() && matches!(app.overlay, crate::app::Overlay::None) {
+        if let Some(el) = overlays::hover_tooltip(app, true) {
+            layers.push(el);
+        }
+    }
     // トースト
     if let Some((msg, _)) = &app.toast {
         layers.push(overlays::toast(app, msg));

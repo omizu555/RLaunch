@@ -616,6 +616,60 @@ pub fn search_overlay(app: &App) -> Element<'_, Message> {
         .into()
 }
 
+/// ホバー中セルのツールチップ（stack レイヤーで自前描画。iced の tooltip ウィジェットは
+/// tiny-skia で残像化するため使わない）。in_popup=true ならポップアップ座標系で配置する。
+pub fn hover_tooltip(app: &App, in_popup: bool) -> Option<Element<'_, Message>> {
+    // ドラッグ中・メニュー/オーバーレイ表示中は出さない
+    if app.ctx_menu.is_some() || !matches!(app.overlay, Overlay::None) {
+        return None;
+    }
+    if !matches!(app.drag, crate::app::DragState::Idle) {
+        return None;
+    }
+    let (grid, idx) = app.hovered_cell?;
+    // メイン用ツールチップはメインのグリッド、ポップアップ用はポップアップのグリッドのみ
+    let is_popup_grid = app.popup_grid() == Some(grid);
+    if is_popup_grid != in_popup {
+        return None;
+    }
+    let tip = crate::ui::grid::tooltip_text(app, grid, idx)?;
+    let cursor = if in_popup {
+        app.popup_cursor
+    } else {
+        app.cursor
+    };
+
+    let ui = &app.ui;
+    let panel = container(text(tip).size(11).color(ui.text_primary))
+        .padding(6)
+        .max_width(360.0)
+        .style(style::panel(ui));
+
+    // カーソルの少し下に配置。おおよその推定サイズでウィンドウ内にクランプ。
+    let bounds = if in_popup {
+        // ポップアップサイズは概算（グリッド構成から）
+        crate::ui::grid::GridParams::resolve(app, grid)
+            .map(|p| {
+                let (w, h) = p.inner_size(app.data.settings.cell_size as f32);
+                iced::Size::new(
+                    w + crate::app::layout::GRID_PADDING,
+                    h + crate::app::layout::GRID_PADDING + crate::app::layout::POPUP_HEADER_HEIGHT,
+                )
+            })
+            .unwrap_or(iced::Size::new(400.0, 300.0))
+    } else {
+        crate::app::compute_main_size(&app.data, app.active_tab)
+    };
+    Some(positioned(
+        panel.into(),
+        cursor.x + 12.0,
+        cursor.y + 18.0,
+        200.0,
+        60.0,
+        bounds,
+    ))
+}
+
 /// トースト通知（下部中央）
 pub fn toast<'a>(app: &'a App, message: &str) -> Element<'a, Message> {
     let panel = container(

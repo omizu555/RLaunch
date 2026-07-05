@@ -4,7 +4,7 @@ use crate::app::{layout, App, DragState, GridRef, Message};
 use crate::model::data::{GridCell, LauncherItem};
 use crate::model::theme::parse_color;
 use crate::ui::style::{self, CellState};
-use iced::widget::{column, container, mouse_area, row, stack, text, tooltip};
+use iced::widget::{column, container, mouse_area, row, stack, text};
 use iced::{Alignment, Element, Length};
 
 /// グリッドの表示パラメータ（GridRef から解決）
@@ -243,34 +243,37 @@ fn cell_view<'a>(
         .height(Length::Fixed(h))
         .style(style::cell(ui, state));
 
-    let area = mouse_area(boxed)
+    // ツールチップは iced の tooltip ウィジェット（overlay 機構）を使わない。
+    // tiny-skia では overlay の消去が partial redraw で残像化するため、
+    // ホバー中セルの情報は main_window/group_popup 側の stack レイヤーで自前描画する
+    // （hover_tooltip）。ここでは mouse_area のみ返す。
+    mouse_area(boxed)
         .on_press(Message::CellPressed(grid, idx))
         .on_release(Message::CellReleased(grid, idx))
         .on_right_press(Message::CellRightPressed(grid, idx))
         .on_enter(Message::CellEntered(grid, idx))
-        .on_exit(Message::CellExited(grid, idx));
+        .on_exit(Message::CellExited(grid, idx))
+        .into()
+}
 
-    // ツールチップ（登録アイテムのみ）
-    if let Some(GridCell::Launcher(item)) = cell {
+/// ホバー中セルのツールチップ文字列（登録アイテムのみ。無ければ None）
+pub fn tooltip_text(app: &App, grid: GridRef, idx: usize) -> Option<String> {
+    let cell = app.cells(grid)?.get(idx)?.as_ref()?;
+    if let GridCell::Launcher(item) = cell {
         let mut tip = item.label.clone();
         tip.push('\n');
         tip.push_str(&item.path);
         if let Some(args) = &item.args {
-            tip.push_str(&format!("\n引数: {}", args));
+            if !args.trim().is_empty() {
+                tip.push_str(&format!("\n引数: {}", args));
+            }
         }
         if let Some(n) = item.launch_count {
             tip.push_str(&format!("\n起動回数: {}", n));
         }
-        tooltip(
-            area,
-            container(text(tip).size(11))
-                .padding(6)
-                .style(style::panel(ui)),
-            tooltip::Position::FollowCursor,
-        )
-        .into()
+        Some(tip)
     } else {
-        area.into()
+        None
     }
 }
 
